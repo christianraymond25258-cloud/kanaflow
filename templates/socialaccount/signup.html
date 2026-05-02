@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Almost there — KanaFlow{% endblock %}
+
+{% block extra_style %}
+.auth-wrap { position: relative; z-index: 1; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+.auth-card { background: rgba(19,19,31,0.92); border: 1px solid rgba(56,189,248,0.18); border-radius: 24px; padding: 2.8rem 2.5rem; width: 100%; max-width: 440px; backdrop-filter: blur(20px); animation: slideUp 0.5s ease both; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+.auth-logo { text-align: center; font-size: 2.2rem; font-family: 'Noto Sans JP', sans-serif; color: #38bdf8; margin-bottom: 0.5rem; }
+.auth-title { text-align: center; font-size: 1.5rem; font-weight: 700; margin-bottom: 0.4rem; }
+.auth-sub { text-align: center; color: #94a3b8; font-size: 0.88rem; margin-bottom: 2rem; line-height: 1.6; }
+.google-confirm { display: flex; align-items: center; gap: 0.8rem; background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.2); border-radius: 12px; padding: 0.9rem 1.2rem; margin-bottom: 1.8rem; }
+.google-confirm-text { font-size: 0.85rem; color: #34d399; font-weight: 500; }
+.google-email { font-size: 0.78rem; color: #94a3b8; margin-top: 0.1rem; }
+.form-label { display: block; font-size: 0.82rem; font-weight: 500; color: #94a3b8; margin-bottom: 0.4rem; }
+.form-input { width: 100%; padding: 0.8rem 1rem; background: rgba(10,10,15,0.8); border: 1px solid rgba(56,189,248,0.15); border-radius: 10px; color: #f0f4f8; font-size: 0.95rem; font-family: 'Inter', sans-serif; transition: all 0.2s; outline: none; margin-bottom: 1.2rem; }
+.form-input:focus { border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56,189,248,0.12); }
+.form-input::placeholder { color: #475569; }
+.email-input { background: rgba(56,189,248,0.05); color: #94a3b8; cursor: not-allowed; }
+.submit-btn { width: 100%; padding: 0.9rem; background: #38bdf8; color: #0a0a0f; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+.submit-btn:hover { background: #7dd3fc; transform: translateY(-1px); box-shadow: 0 6px 25px rgba(56,189,248,0.3); }
+.back-home { position: fixed; top: 1.5rem; left: 1.5rem; z-index: 10; color: #94a3b8; text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+.back-home:hover { color: #38bdf8; }
+.hint { font-size: 0.75rem; color: #475569; margin-top: -0.8rem; margin-bottom: 1.2rem; }
+{% endblock %}
+
+{% block content %}
+<a href="{% url 'landing' %}" class="back-home">← KanaFlow</a>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo">漢</div>
+    <h1 class="auth-title">Almost there!</h1>
+    <p class="auth-sub">Your Google account is verified. Just pick a username to complete your KanaFlow profile.</p>
+
+    <div class="google-confirm">
+      <div style="font-size:1.4rem;">✓</div>
+      <div>
+        <div class="google-confirm-text">Google account connected</div>
+        <div class="google-email">{{ form.email.value }}</div>
+      </div>
+    </div>
+
+    <form method="POST" action="{% url 'socialaccount_signup' %}">
+      {% csrf_token %}
+
+      <label class="form-label">Email address</label>
+      <input type="email" class="form-input email-input"
+             value="{{ form.email.value }}" readonly/>
+
+      <label class="form-label">Choose a username</label>
+      <input type="text" name="username" class="form-input"
+             placeholder="e.g. sakura_learner"
+             value="{{ form.username.value|default:'' }}"
+             autocomplete="username"/>
+      <div class="hint">This is how you'll appear on the leaderboard</div>
+
+      {% if form.errors %}
+        {% for error in form.non_field_errors %}
+        <div style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.25);border-radius:8px;padding:0.6rem 0.9rem;color:#f87171;font-size:0.85rem;margin-bottom:1rem;">
+          {{ error }}
+        </div>
+        {% endfor %}
+        {% if form.username.errors %}
+        <div style="color:#f87171;font-size:0.78rem;margin-top:-0.8rem;margin-bottom:1rem;">
+          {{ form.username.errors|join:", " }}
+        </div>
+        {% endif %}
+      {% endif %}
+
+      <button type="submit" class="submit-btn">✦ Start Learning →</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

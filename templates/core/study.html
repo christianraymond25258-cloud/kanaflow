@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+{% block title %}Study — KanaFlow{% endblock %}
+
+{% block extra_style %}
+.shell { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 1rem 2.5rem; background: rgba(10,10,15,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(56,189,248,0.12); }
+.logo { font-size: 1.2rem; font-weight: 700; color: #38bdf8; font-family: 'Noto Sans JP', sans-serif; text-decoration: none; }
+.back-btn { color: #94a3b8; text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem; transition: color 0.2s; }
+.back-btn:hover { color: #38bdf8; }
+.main { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 3rem 1.5rem; }
+.prog-wrap { width: 100%; max-width: 600px; margin-bottom: 1.5rem; }
+.prog-meta { display: flex; justify-content: space-between; font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.5rem; }
+.prog-meta span { color: #38bdf8; font-weight: 600; }
+.prog-bar { background: rgba(56,189,248,0.1); border-radius: 100px; height: 6px; overflow: hidden; }
+.prog-fill { height: 100%; background: linear-gradient(90deg,#38bdf8,#7dd3fc); border-radius: 100px; transition: width 0.4s ease; }
+.score-row { display: flex; gap: 1rem; margin-bottom: 2.5rem; }
+.pill { border-radius: 100px; padding: 0.3rem 1rem; font-size: 0.82rem; font-weight: 600; }
+.pill-c { background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.25); color: #34d399; }
+.pill-w { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.25); color: #f87171; }
+.pill-x { background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.2); color: #38bdf8; }
+.study-card { width: 100%; max-width: 500px; background: #13131f; border: 1px solid rgba(56,189,248,0.18); border-radius: 28px; padding: 3rem 2.5rem; display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 2rem; transition: border-color 0.3s; }
+.study-card.correct-flash { border-color: #34d399; box-shadow: 0 0 30px rgba(52,211,153,0.15); }
+.study-card.wrong-flash { border-color: #f87171; box-shadow: 0 0 30px rgba(248,113,113,0.15); }
+.char-display { font-size: 8rem; font-family: 'Noto Sans JP', sans-serif; color: #38bdf8; line-height: 1; margin-bottom: 0.5rem; }
+.char-script-tag { font-size: 0.75rem; color: #475569; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 2rem; }
+.input-wrap { position: relative; width: 100%; max-width: 320px; margin-bottom: 1rem; }
+.rom-input { width: 100%; padding: 1rem 1.2rem; text-align: center; background: rgba(10,10,15,0.8); border: 2px solid rgba(56,189,248,0.2); border-radius: 14px; color: #f0f4f8; font-size: 1.3rem; font-weight: 600; font-family: 'Inter', sans-serif; outline: none; transition: all 0.2s; letter-spacing: 0.05em; }
+.rom-input:focus { border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56,189,248,0.12); }
+.rom-input.correct { border-color: #34d399; background: rgba(52,211,153,0.08); color: #34d399; }
+.rom-input.wrong { border-color: #f87171; background: rgba(248,113,113,0.08); color: #f87171; }
+.rom-input::placeholder { color: #334155; font-weight: 400; font-size: 1rem; }
+.feedback { font-size: 1.1rem; font-weight: 600; min-height: 1.8rem; transition: all 0.2s; }
+.feedback.correct { color: #34d399; }
+.feedback.wrong { color: #f87171; }
+.correct-answer { font-size: 0.85rem; color: #94a3b8; margin-top: 0.3rem; min-height: 1.2rem; }
+.submit-btn { background: #38bdf8; color: #0a0a0f; border: none; border-radius: 12px; padding: 0.85rem 2.5rem; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; margin-top: 1rem; }
+.submit-btn:hover { background: #7dd3fc; transform: translateY(-1px); }
+.skip-btn { background: transparent; border: 1px solid rgba(56,189,248,0.15); color: #475569; border-radius: 10px; padding: 0.6rem 1.5rem; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+.skip-btn:hover { color: #94a3b8; border-color: rgba(56,189,248,0.3); }
+.hint-text { font-size: 0.75rem; color: #334155; margin-top: 0.5rem; }
+.results { display: none; flex-direction: column; align-items: center; text-align: center; max-width: 520px; width: 100%; }
+.results.show { display: flex; }
+.results-emoji { font-size: 4rem; margin-bottom: 1rem; }
+.results h2 { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
+.results p { color: #94a3b8; margin-bottom: 2rem; line-height: 1.6; }
+.results-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; width: 100%; margin-bottom: 2rem; }
+.r-card { background: #13131f; border: 1px solid rgba(56,189,248,0.12); border-radius: 16px; padding: 1.2rem; }
+.r-num { font-size: 2.2rem; font-weight: 700; color: #38bdf8; display: block; }
+.r-label { font-size: 0.75rem; color: #94a3b8; }
+.missed-section { width: 100%; background: rgba(248,113,113,0.06); border: 1px solid rgba(248,113,113,0.15); border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem; text-align: left; }
+.missed-title { font-size: 0.85rem; font-weight: 600; color: #f87171; margin-bottom: 1rem; }
+.missed-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.missed-item { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.2); border-radius: 10px; padding: 0.4rem 0.8rem; font-size: 0.85rem; display: flex; gap: 0.5rem; align-items: center; }
+.missed-char { font-family: 'Noto Sans JP', sans-serif; color: #f87171; font-size: 1.1rem; }
+.missed-rom { color: #94a3b8; font-size: 0.78rem; }
+.btn-row { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+.btn-again { background: #38bdf8; color: #0a0a0f; border: none; border-radius: 12px; padding: 0.9rem 2rem; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; text-decoration: none; display: inline-block; }
+.btn-again:hover { background: #7dd3fc; transform: translateY(-1px); }
+.btn-reselect { background: transparent; color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); border-radius: 12px; padding: 0.9rem 2rem; font-size: 1rem; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; text-decoration: none; display: inline-block; }
+.btn-dash { background: transparent; color: #94a3b8; border: 1px solid rgba(56,189,248,0.15); border-radius: 12px; padding: 0.9rem 2rem; font-size: 1rem; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; text-decoration: none; display: inline-block; }
+.btn-dash:hover { color: #38bdf8; }
+.xp-toast { position: fixed; bottom: 2rem; right: 2rem; background: #13131f; border: 1px solid #38bdf8; border-radius: 14px; padding: 0.9rem 1.5rem; color: #38bdf8; font-weight: 700; font-size: 1rem; transform: translateY(80px); opacity: 0; transition: all 0.4s ease; z-index: 999; }
+.xp-toast.show { transform: translateY(0); opacity: 1; }
+.ach-toast { position: fixed; bottom: 2rem; right: 2rem; background: #13131f; border: 1px solid rgba(251,191,36,0.4); border-radius: 16px; padding: 1rem 1.5rem; display: flex; align-items: center; gap: 0.8rem; transform: translateY(80px); opacity: 0; transition: all 0.4s ease; z-index: 999; max-width: 300px; }
+.ach-toast.show { transform: translateY(0); opacity: 1; }
+.ach-icon { font-size: 1.8rem; }
+.ach-text strong { display: block; font-size: 0.88rem; color: #fbbf24; }
+.ach-text span { font-size: 0.75rem; color: #94a3b8; }
+{% endblock %}
+
+{% block content %}
+<div class="shell">
+  <nav class="topbar">
+    <a class="logo" href="{% url 'dashboard' %}">漢 KanaFlow</a>
+    <a href="/learn/{{ script }}/select/" class="back-btn">← Change characters</a>
+    <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <main class="main">
+    <div id="study-ui" style="width:100%;display:flex;flex-direction:column;align-items:center;">
+      <div class="prog-wrap">
+        <div class="prog-meta">
+          <span id="card-counter">1 of ?</span>
+          <span id="pct-label">0%</span>
+        </div>
+        <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+      </div>
+
+      <div class="score-row">
+        <div class="pill pill-c">✓ <span id="sc">0</span></div>
+        <div class="pill pill-w">✗ <span id="sw">0</span></div>
+        <div class="pill pill-x">⚡ <span id="sx">0</span> XP</div>
+      </div>
+
+      <div class="study-card" id="study-card">
+        <div class="char-display" id="char-display">あ</div>
+        <div class="char-script-tag" id="char-script-tag">hiragana</div>
+        <div class="input-wrap">
+          <input type="text" class="rom-input" id="rom-input"
+                 placeholder="type romaji here..."
+                 autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+        </div>
+        <div class="feedback" id="feedback"></div>
+        <div class="correct-answer" id="correct-answer"></div>
+        <button class="submit-btn" id="submit-btn" onclick="submitAnswer()">Check →</button>
+        <button class="skip-btn" style="margin-top:0.8rem;" onclick="skipChar()">Skip</button>
+        <div class="hint-text">Press Enter to check · Shift+Enter to skip</div>
+      </div>
+    </div>
+
+    <div class="results" id="results">
+      <div class="results-emoji" id="results-emoji">🎉</div>
+      <h2 id="results-title">Session complete!</h2>
+      <p id="results-msg"></p>
+      <div class="results-grid">
+        <div class="r-card"><span class="r-num" id="r-correct">0</span><div class="r-label">Correct</div></div>
+        <div class="r-card"><span class="r-num" id="r-wrong" style="color:#f87171;">0</span><div class="r-label">Incorrect</div></div>
+        <div class="r-card"><span class="r-num" id="r-xp">0</span><div class="r-label">XP earned</div></div>
+      </div>
+      <div class="missed-section" id="missed-section" style="display:none;">
+        <div class="missed-title">Characters to review again:</div>
+        <div class="missed-grid" id="missed-grid"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-again" onclick="restartSession()">Practice again</button>
+        <a href="/learn/{{ script }}/select/" class="btn-reselect">Change selection</a>
+        <a href="{% url 'dashboard' %}" class="btn-dash">Dashboard</a>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="xp-toast" id="xp-toast">⚡ +10 XP!</div>
+<div class="ach-toast" id="ach-toast">
+  <div class="ach-icon" id="ach-icon">🏆</div>
+  <div class="ach-text">
+    <strong id="ach-title">Achievement!</strong>
+    <span id="ach-desc"></span>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const SCRIPT = '{{ script }}';
+let deck = [], idx = 0, correct = 0, wrong = 0, results = [], answered = false, missedChars = [];
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function init() {
+  const raw = sessionStorage.getItem('kana_chars');
+  if (!raw) { window.location.href = `/learn/${SCRIPT}/select/`; return; }
+  deck = shuffle(JSON.parse(raw));
+  idx = 0; correct = 0; wrong = 0; results = []; missedChars = []; answered = false;
+  document.getElementById('results').classList.remove('show');
+  document.getElementById('study-ui').style.display = 'flex';
+  showChar();
+}
+
+function showChar() {
+  if (idx >= deck.length) { endSession(); return; }
+  const c = deck[idx];
+  document.getElementById('char-display').textContent = c.char;
+  let tag = SCRIPT;
+  if (SCRIPT === 'kana') {
+    const code = c.char.charCodeAt(0);
+    tag = (code >= 0x3040 && code <= 0x309F) ? 'hiragana' : 'katakana';
+  }
+  document.getElementById('char-script-tag').textContent = tag;
+  const input = document.getElementById('rom-input');
+  input.value = ''; input.className = 'rom-input'; input.disabled = false; input.focus();
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('correct-answer').textContent = '';
+  document.getElementById('study-card').className = 'study-card';
+  document.getElementById('submit-btn').textContent = 'Check →';
+  answered = false;
+  const total = deck.length;
+  const pct = Math.round((idx / total) * 100);
+  document.getElementById('card-counter').textContent = `${idx + 1} of ${total}`;
+  document.getElementById('pct-label').textContent = pct + '%';
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('sc').textContent = correct;
+  document.getElementById('sw').textContent = wrong;
+  document.getElementById('sx').textContent = correct * 10;
+}
+
+function submitAnswer() {
+  if (answered) { idx++; showChar(); return; }
+  const c = deck[idx];
+  const input = document.getElementById('rom-input');
+  const val = input.value.trim().toLowerCase();
+  if (!val) return;
+  const isCorrect = val === c.rom.toLowerCase();
+  answered = true;
+  results.push({ char: c.char, rom: c.rom, correct: isCorrect });
+  if (isCorrect) {
+    correct++;
+    input.className = 'rom-input correct';
+    document.getElementById('feedback').textContent = '✓ Correct!';
+    document.getElementById('feedback').className = 'feedback correct';
+    document.getElementById('study-card').className = 'study-card correct-flash';
+    showToast();
+  } else {
+    wrong++;
+    input.className = 'rom-input wrong';
+    document.getElementById('feedback').textContent = '✗ Not quite';
+    document.getElementById('feedback').className = 'feedback wrong';
+    document.getElementById('correct-answer').textContent = `Answer: ${c.rom}`;
+    document.getElementById('study-card').className = 'study-card wrong-flash';
+    missedChars.push(c);
+  }
+  input.disabled = true;
+  document.getElementById('submit-btn').textContent = 'Next →';
+  document.getElementById('sc').textContent = correct;
+  document.getElementById('sw').textContent = wrong;
+  document.getElementById('sx').textContent = correct * 10;
+}
+
+function skipChar() {
+  if (!answered) {
+    const c = deck[idx];
+    results.push({ char: c.char, rom: c.rom, correct: false });
+    wrong++; missedChars.push(c);
+  }
+  idx++; showChar();
+}
+
+function showToast() {
+  const t = document.getElementById('xp-toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1400);
+}
+
+function endSession() {
+  document.getElementById('study-ui').style.display = 'none';
+  const res = document.getElementById('results');
+  res.classList.add('show');
+  const pct = deck.length > 0 ? Math.round((correct / deck.length) * 100) : 0;
+  document.getElementById('r-correct').textContent = correct;
+  document.getElementById('r-wrong').textContent = wrong;
+  document.getElementById('r-xp').textContent = correct * 10;
+  let emoji = '🎉', title = 'Session complete!', msg = '';
+  if (pct === 100) { emoji = '🏆'; title = 'Perfect score!'; msg = 'You got every single character right. Outstanding!'; }
+  else if (pct >= 80) { msg = `Great work! You got ${pct}% correct. Keep drilling the ones you missed.`; }
+  else if (pct >= 50) { emoji = '💪'; msg = `${pct}% correct — you're making progress!`; }
+  else { emoji = '📚'; title = 'Keep practising!'; msg = `${pct}% correct this time. Every session makes you better.`; }
+  document.getElementById('results-emoji').textContent = emoji;
+  document.getElementById('results-title').textContent = title;
+  document.getElementById('results-msg').textContent = msg;
+  if (missedChars.length > 0) {
+    document.getElementById('missed-section').style.display = 'block';
+    document.getElementById('missed-grid').innerHTML = missedChars.map(c =>
+      `<div class="missed-item"><span class="missed-char">${c.char}</span><span class="missed-rom">${c.rom}</span></div>`
+    ).join('');
+  }
+  fetch('/api/progress/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+    body: JSON.stringify({ script: SCRIPT, results, correct, incorrect: wrong, mode: 'normal' })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.new_achievements && data.new_achievements.length > 0) showAchievements(data.new_achievements);
+  })
+  .catch(console.error);
+}
+
+function showAchievements(list) {
+  let i = 0;
+  function showNext() {
+    if (i >= list.length) return;
+    const a = list[i++];
+    document.getElementById('ach-icon').textContent = a.icon;
+    document.getElementById('ach-title').textContent = a.title;
+    document.getElementById('ach-desc').textContent = a.desc;
+    const toast = document.getElementById('ach-toast');
+    toast.classList.add('show');
+    setTimeout(() => { toast.classList.remove('show'); setTimeout(showNext, 400); }, 3000);
+  }
+  showNext();
+}
+
+function restartSession() { init(); }
+
+function getCookie(name) {
+  let v = null;
+  document.cookie.split(';').forEach(c => {
+    c = c.trim();
+    if (c.startsWith(name + '=')) v = decodeURIComponent(c.slice(name.length + 1));
+  });
+  return v;
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitAnswer(); }
+  if (e.key === 'Enter' && e.shiftKey) { e.preventDefault(); skipChar(); }
+});
+
+init();
+</script>
+{% endblock %}

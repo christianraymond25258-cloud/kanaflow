@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+{% block title %}Select Characters — KanaFlow{% endblock %}
+
+{% block extra_style %}
+.shell { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 1rem 2.5rem; background: rgba(10,10,15,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(56,189,248,0.12); position: sticky; top: 0; z-index: 50; }
+.logo { font-size: 1.2rem; font-weight: 700; color: #38bdf8; font-family: 'Noto Sans JP', sans-serif; text-decoration: none; }
+.back-btn { color: #94a3b8; text-decoration: none; font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem; transition: color 0.2s; }
+.back-btn:hover { color: #38bdf8; }
+.main { padding: 2.5rem; max-width: 1000px; margin: 0 auto; width: 100%; }
+.page-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.4rem; }
+.page-title span { color: #38bdf8; }
+.page-sub { color: #94a3b8; font-size: 0.92rem; margin-bottom: 2rem; line-height: 1.6; }
+
+.toolbar { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
+.btn-selall { background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.25); color: #38bdf8; border-radius: 10px; padding: 0.5rem 1.1rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+.btn-selall:hover { background: rgba(56,189,248,0.2); }
+.btn-clr { background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); color: #f87171; border-radius: 10px; padding: 0.5rem 1.1rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+.btn-clr:hover { background: rgba(248,113,113,0.15); }
+.btn-spaced { background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); color: #a78bfa; border-radius: 10px; padding: 0.5rem 1.1rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+.btn-spaced:hover { background: rgba(167,139,250,0.15); }
+.sel-count { margin-left: auto; font-size: 0.85rem; color: #94a3b8; }
+.sel-count span { color: #38bdf8; font-weight: 700; }
+
+.due-banner { background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2); border-radius: 12px; padding: 0.8rem 1.2rem; margin-bottom: 1.5rem; font-size: 0.85rem; color: #a78bfa; display: none; align-items: center; gap: 0.6rem; }
+.due-banner.show { display: flex; }
+
+.group-section { margin-bottom: 2rem; }
+.group-label { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #475569; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.6rem; }
+.group-label::after { content: ''; flex: 1; height: 1px; background: rgba(56,189,248,0.1); }
+.group-sel-btn { font-size: 0.7rem; color: #38bdf8; cursor: pointer; font-weight: 500; white-space: nowrap; background: none; border: none; font-family: 'Inter', sans-serif; }
+.group-sel-btn:hover { color: #7dd3fc; }
+
+.char-grid { display: flex; flex-wrap: wrap; gap: 0.7rem; }
+.char-tile {
+  width: 76px; height: 86px;
+  background: #13131f; border: 1px solid rgba(56,189,248,0.12);
+  border-radius: 14px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s; user-select: none; position: relative;
+}
+.char-tile:hover { border-color: rgba(56,189,248,0.4); transform: translateY(-2px); }
+.char-tile.selected { background: rgba(56,189,248,0.12); border-color: #38bdf8; box-shadow: 0 0 0 2px rgba(56,189,248,0.2); }
+.char-tile.selected .tile-char { color: #38bdf8; }
+.char-tile.due-review { border-color: rgba(167,139,250,0.4); }
+.char-tile.due-review .tile-char { color: #a78bfa; }
+.char-tile.due-review.selected { border-color: #a78bfa; background: rgba(167,139,250,0.12); }
+.char-tile .check { position: absolute; top: 6px; right: 6px; width: 16px; height: 16px; border-radius: 50%; background: #38bdf8; display: none; align-items: center; justify-content: center; }
+.char-tile.selected .check { display: flex; }
+.char-tile.due-review.selected .check { background: #a78bfa; }
+.check-svg { width: 10px; height: 10px; }
+.due-dot { position: absolute; top: 6px; left: 6px; width: 6px; height: 6px; border-radius: 50%; background: #a78bfa; }
+.tile-char { font-size: 2rem; font-family: 'Noto Sans JP', sans-serif; color: #94a3b8; line-height: 1; transition: color 0.2s; }
+.tile-rom { font-size: 0.65rem; color: #475569; margin-top: 0.3rem; }
+.tile-meaning { font-size: 0.55rem; color: #334155; margin-top: 0.15rem; text-align: center; padding: 0 4px; }
+
+.sticky-footer { position: sticky; bottom: 0; background: rgba(10,10,15,0.95); backdrop-filter: blur(20px); border-top: 1px solid rgba(56,189,248,0.15); padding: 1.2rem 2.5rem; display: flex; align-items: center; justify-content: space-between; z-index: 40; }
+.footer-info { font-size: 0.88rem; color: #94a3b8; }
+.footer-info strong { color: #38bdf8; }
+.footer-btns { display: flex; gap: 0.8rem; }
+.btn-start { background: #38bdf8; color: #0a0a0f; border: none; border-radius: 12px; padding: 0.85rem 2rem; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+.btn-start:hover { background: #7dd3fc; transform: translateY(-1px); box-shadow: 0 6px 25px rgba(56,189,248,0.3); }
+.btn-start:disabled { background: #1e293b; color: #475569; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-timer { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24; border-radius: 12px; padding: 0.85rem 1.5rem; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+.btn-timer:hover { background: rgba(251,191,36,0.2); transform: translateY(-1px); }
+.btn-timer:disabled { background: #1e293b; color: #475569; border-color: transparent; cursor: not-allowed; transform: none; }
+{% endblock %}
+
+{% block content %}
+<div class="shell">
+  <nav class="topbar">
+  <a class="logo" href="{% url 'dashboard' %}">漢 KanaFlow</a>
+  <a href="{% url 'dashboard' %}" class="back-btn">← Dashboard</a>
+  <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+  <main class="main">
+    <h1 class="page-title">Study <span>{{ script_title }}</span></h1>
+    <p class="page-sub">
+      Select the characters you want to practise — pick individual ones or grab a whole row.
+      Purple dots mean the character is <strong style="color:#a78bfa;">due for review</strong> today.
+      Hit <strong style="color:#38bdf8;">Start Session</strong> to type-in drill,
+      or <strong style="color:#fbbf24;">⏱️ Timer</strong> for a timed blitz with 1.5× XP.
+    </p>
+
+    <!-- Due for review banner -->
+    <div class="due-banner" id="due-banner">
+      🔮 <span id="due-banner-text"></span>
+      <button class="btn-spaced" style="margin-left:auto;" onclick="selectDue()">Select due only</button>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn-selall" onclick="selectAll()">Select all</button>
+      <button class="btn-clr" onclick="clearAll()">Clear all</button>
+      <div class="sel-count"><span id="sel-num">0</span> selected</div>
+    </div>
+
+    {% for group, chars in groups.items %}
+    <div class="group-section">
+      <div class="group-label">
+        {{ group }} row
+        <button class="group-sel-btn" onclick="selectGroup('{{ group }}')">select row</button>
+        &nbsp;
+      </div>
+      <div class="char-grid" data-group="{{ group }}">
+        {% for c in chars %}
+        <div class="char-tile"
+             data-char="{{ c.char }}"
+             data-rom="{{ c.rom }}"
+             data-group="{{ group }}"
+             onclick="toggleChar(this)">
+          <div class="check">
+            <svg class="check-svg" viewBox="0 0 10 10">
+              <polyline points="1.5,5 4,7.5 8.5,2.5"
+                fill="none" stroke="#0a0a0f"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="tile-char">{{ c.char }}</span>
+          <span class="tile-rom">{{ c.rom }}</span>
+          {% if c.meaning %}
+          <span class="tile-meaning">{{ c.meaning }}</span>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </main>
+
+  <div class="sticky-footer">
+    <div class="footer-info">
+      <strong id="footer-count">0</strong> characters selected — shown in random order
+    </div>
+    <div class="footer-btns">
+      <button class="btn-timer" id="timer-btn" onclick="startTimer()" disabled>⏱️ Timer</button>
+      <button class="btn-start" id="start-btn" onclick="startStudy()" disabled>Start Session →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SCRIPT = '{{ script }}';
+const DUE_CHARS = new Set({{ due_chars_json|safe }});
+let selected = new Set();
+
+// Mark due characters on load
+document.addEventListener('DOMContentLoaded', () => {
+  if (DUE_CHARS.size > 0) {
+    document.querySelectorAll('.char-tile').forEach(el => {
+      if (DUE_CHARS.has(el.dataset.char)) {
+        el.classList.add('due-review');
+        // Add purple dot
+        const dot = document.createElement('div');
+        dot.className = 'due-dot';
+        el.appendChild(dot);
+      }
+    });
+    const banner = document.getElementById('due-banner');
+    banner.classList.add('show');
+    document.getElementById('due-banner-text').textContent =
+      `${DUE_CHARS.size} character${DUE_CHARS.size > 1 ? 's' : ''} due for review today`;
+  }
+});
+
+function toggleChar(el) {
+  const char = el.dataset.char;
+  if (selected.has(char)) {
+    selected.delete(char);
+    el.classList.remove('selected');
+  } else {
+    selected.add(char);
+    el.classList.add('selected');
+  }
+  updateCount();
+}
+
+function selectAll() {
+  document.querySelectorAll('.char-tile').forEach(el => {
+    selected.add(el.dataset.char);
+    el.classList.add('selected');
+  });
+  updateCount();
+}
+
+function clearAll() {
+  selected.clear();
+  document.querySelectorAll('.char-tile').forEach(el => el.classList.remove('selected'));
+  updateCount();
+}
+
+function selectGroup(group) {
+  document.querySelectorAll(`.char-tile[data-group="${group}"]`).forEach(el => {
+    selected.add(el.dataset.char);
+    el.classList.add('selected');
+  });
+  updateCount();
+}
+
+function selectDue() {
+  clearAll();
+  document.querySelectorAll('.char-tile.due-review').forEach(el => {
+    selected.add(el.dataset.char);
+    el.classList.add('selected');
+  });
+  updateCount();
+}
+
+function updateCount() {
+  const n = selected.size;
+  document.getElementById('sel-num').textContent = n;
+  document.getElementById('footer-count').textContent = n;
+  document.getElementById('start-btn').disabled = n === 0;
+  document.getElementById('timer-btn').disabled = n === 0;
+}
+
+function getSelectedChars() {
+  const chars = [];
+  document.querySelectorAll('.char-tile.selected').forEach(el => {
+    const obj = { char: el.dataset.char, rom: el.dataset.rom };
+    const meaning = el.querySelector('.tile-meaning');
+    if (meaning) obj.meaning = meaning.textContent.trim();
+    chars.push(obj);
+  });
+  return chars;
+}
+
+function startStudy() {
+  const chars = getSelectedChars();
+  sessionStorage.setItem('kana_chars', JSON.stringify(chars));
+  sessionStorage.setItem('kana_script', SCRIPT);
+  window.location.href = `/learn/${SCRIPT}/study/`;
+}
+
+function startTimer() {
+  const chars = getSelectedChars();
+  sessionStorage.setItem('kana_chars', JSON.stringify(chars));
+  sessionStorage.setItem('kana_script', SCRIPT);
+  window.location.href = `/learn/${SCRIPT}/timer/`;
+}
+</script>
+{% endblock %}

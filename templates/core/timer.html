@@ -1,0 +1,365 @@
+{% extends "base.html" %}
+{% block title %}Timer Mode — KanaFlow{% endblock %}
+
+{% block extra_style %}
+.shell { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 1rem 2.5rem; background: rgba(10,10,15,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(56,189,248,0.12); }
+.logo { font-size: 1.2rem; font-weight: 700; color: #38bdf8; font-family: 'Noto Sans JP', sans-serif; text-decoration: none; }
+.back-btn { color: #94a3b8; text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+.back-btn:hover { color: #38bdf8; }
+.main { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 2.5rem 1.5rem; }
+
+/* Timer ring */
+.timer-ring-wrap { position: relative; width: 140px; height: 140px; margin-bottom: 2rem; }
+.timer-ring { transform: rotate(-90deg); }
+.ring-bg { fill: none; stroke: rgba(56,189,248,0.1); stroke-width: 8; }
+.ring-fill { fill: none; stroke: #38bdf8; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1s linear, stroke 0.3s; }
+.ring-fill.warning { stroke: #fbbf24; }
+.ring-fill.danger  { stroke: #f87171; }
+.timer-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 700; color: #38bdf8; }
+.timer-num.warning { color: #fbbf24; }
+.timer-num.danger  { color: #f87171; }
+
+/* Score row */
+.score-row { display: flex; gap: 1rem; margin-bottom: 2rem; }
+.pill { border-radius: 100px; padding: 0.3rem 1rem; font-size: 0.82rem; font-weight: 600; }
+.pill-c { background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.25); color: #34d399; }
+.pill-w { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.25); color: #f87171; }
+.pill-x { background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.2); color: #38bdf8; }
+
+/* Card */
+.study-card { width: 100%; max-width: 480px; background: #13131f; border: 1px solid rgba(56,189,248,0.18); border-radius: 28px; padding: 2.5rem 2rem; display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 1.5rem; transition: border-color 0.3s, box-shadow 0.3s; }
+.study-card.correct-flash { border-color: #34d399; box-shadow: 0 0 30px rgba(52,211,153,0.15); }
+.study-card.wrong-flash   { border-color: #f87171; box-shadow: 0 0 30px rgba(248,113,113,0.15); }
+.char-display { font-size: 7rem; font-family: 'Noto Sans JP', sans-serif; color: #38bdf8; line-height: 1; margin-bottom: 0.5rem; }
+.char-tag { font-size: 0.72rem; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1.5rem; }
+.rom-input { width: 100%; max-width: 300px; padding: 0.9rem 1.2rem; text-align: center; background: rgba(10,10,15,0.8); border: 2px solid rgba(56,189,248,0.2); border-radius: 14px; color: #f0f4f8; font-size: 1.3rem; font-weight: 600; font-family: 'Inter', sans-serif; outline: none; transition: all 0.2s; letter-spacing: 0.05em; }
+.rom-input:focus { border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56,189,248,0.12); }
+.rom-input.correct { border-color: #34d399; background: rgba(52,211,153,0.08); color: #34d399; }
+.rom-input.wrong   { border-color: #f87171; background: rgba(248,113,113,0.08); color: #f87171; }
+.rom-input::placeholder { color: #334155; font-weight: 400; font-size: 1rem; }
+.feedback { font-size: 1rem; font-weight: 600; min-height: 1.5rem; margin-top: 0.8rem; }
+.feedback.correct { color: #34d399; }
+.feedback.wrong   { color: #f87171; }
+.correct-answer { font-size: 0.82rem; color: #94a3b8; margin-top: 0.2rem; min-height: 1.2rem; }
+.hint { font-size: 0.72rem; color: #334155; margin-top: 0.5rem; }
+
+/* Start screen */
+.start-screen { display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 440px; }
+.start-screen h2 { font-size: 2rem; font-weight: 700; margin-bottom: 0.8rem; }
+.start-screen p { color: #94a3b8; line-height: 1.7; margin-bottom: 2rem; }
+.duration-row { display: flex; gap: 0.8rem; margin-bottom: 2rem; flex-wrap: wrap; justify-content: center; }
+.dur-btn { background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); color: #94a3b8; border-radius: 12px; padding: 0.6rem 1.4rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+.dur-btn.active { background: rgba(56,189,248,0.15); border-color: #38bdf8; color: #38bdf8; }
+.btn-go { background: #38bdf8; color: #0a0a0f; border: none; border-radius: 12px; padding: 1rem 2.5rem; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+.btn-go:hover { background: #7dd3fc; transform: translateY(-1px); box-shadow: 0 6px 25px rgba(56,189,248,0.3); }
+
+/* Results */
+.results { display: none; flex-direction: column; align-items: center; text-align: center; max-width: 500px; width: 100%; }
+.results.show { display: flex; }
+.results-emoji { font-size: 4rem; margin-bottom: 1rem; }
+.results h2 { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
+.results p { color: #94a3b8; margin-bottom: 2rem; line-height: 1.6; }
+.results-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; width: 100%; margin-bottom: 2rem; }
+.r-card { background: #13131f; border: 1px solid rgba(56,189,248,0.12); border-radius: 16px; padding: 1.2rem; }
+.r-num { font-size: 2rem; font-weight: 700; color: #38bdf8; display: block; }
+.r-label { font-size: 0.72rem; color: #94a3b8; }
+.btn-row { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+.btn-again { background: #38bdf8; color: #0a0a0f; border: none; border-radius: 12px; padding: 0.9rem 2rem; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+.btn-again:hover { background: #7dd3fc; }
+.btn-dash { background: transparent; color: #94a3b8; border: 1px solid rgba(56,189,248,0.15); border-radius: 12px; padding: 0.9rem 2rem; font-size: 1rem; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; text-decoration: none; display: inline-block; }
+.btn-dash:hover { color: #38bdf8; }
+.bonus-badge { display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.3); border-radius: 100px; padding: 0.4rem 1rem; font-size: 0.82rem; font-weight: 600; color: #fbbf24; margin-bottom: 1.5rem; }
+
+/* Achievement toast */
+.ach-toast { position: fixed; bottom: 2rem; right: 2rem; background: #13131f; border: 1px solid rgba(251,191,36,0.4); border-radius: 16px; padding: 1rem 1.5rem; display: flex; align-items: center; gap: 0.8rem; transform: translateY(80px); opacity: 0; transition: all 0.4s ease; z-index: 999; max-width: 300px; }
+.ach-toast.show { transform: translateY(0); opacity: 1; }
+.ach-icon { font-size: 1.8rem; }
+.ach-text strong { display: block; font-size: 0.88rem; color: #fbbf24; }
+.ach-text span { font-size: 0.75rem; color: #94a3b8; }
+{% endblock %}
+
+{% block content %}
+<div class="shell">
+  <nav class="topbar">
+  <a class="logo" href="{% url 'dashboard' %}">漢 KanaFlow</a>
+  <a href="/learn/{{ script }}/select/" class="back-btn">← Change characters</a>
+  <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+  <main class="main">
+
+    <!-- Start screen -->
+    <div class="start-screen" id="start-screen">
+      <div style="font-size:3rem;margin-bottom:1rem;">⏱️</div>
+      <h2>Timer Mode</h2>
+      <p>Answer as many <strong style="color:#38bdf8;">{{ script_title }}</strong> characters as you can before time runs out. You earn <strong style="color:#fbbf24;">1.5× XP</strong> in timer mode!</p>
+
+      <div class="duration-row">
+        <button class="dur-btn active" onclick="setDuration(60, this)">60 sec</button>
+        <button class="dur-btn" onclick="setDuration(90, this)">90 sec</button>
+        <button class="dur-btn" onclick="setDuration(120, this)">2 min</button>
+        <button class="dur-btn" onclick="setDuration(180, this)">3 min</button>
+      </div>
+
+      <button class="btn-go" onclick="startTimer()">⚡ Start Timer</button>
+    </div>
+
+    <!-- Game UI -->
+    <div id="game-ui" style="display:none;width:100%;display:none;flex-direction:column;align-items:center;">
+
+      <div class="timer-ring-wrap">
+        <svg class="timer-ring" width="140" height="140" viewBox="0 0 140 140">
+          <circle class="ring-bg" cx="70" cy="70" r="58"/>
+          <circle class="ring-fill" id="ring-fill" cx="70" cy="70" r="58"
+                  stroke-dasharray="364.4" stroke-dashoffset="0"/>
+        </svg>
+        <div class="timer-num" id="timer-num">60</div>
+      </div>
+
+      <div class="score-row">
+        <div class="pill pill-c">✓ <span id="sc">0</span></div>
+        <div class="pill pill-w">✗ <span id="sw">0</span></div>
+        <div class="pill pill-x">⚡ <span id="sx">0</span></div>
+      </div>
+
+      <div class="study-card" id="study-card">
+        <div class="char-display" id="char-display">あ</div>
+        <div class="char-tag" id="char-tag">hiragana</div>
+        <input type="text" class="rom-input" id="rom-input"
+               placeholder="type romaji..."
+               autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+        <div class="feedback" id="feedback"></div>
+        <div class="correct-answer" id="correct-answer"></div>
+        <div class="hint">Press Enter to submit</div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="results" id="results">
+      <div class="results-emoji" id="r-emoji">⏱️</div>
+      <h2>Time's up!</h2>
+      <p id="r-msg"></p>
+      <div class="bonus-badge">🌟 1.5× XP Timer Bonus Applied</div>
+      <div class="results-grid">
+        <div class="r-card"><span class="r-num" id="r-correct">0</span><div class="r-label">Correct</div></div>
+        <div class="r-card"><span class="r-num" id="r-wrong" style="color:#f87171;">0</span><div class="r-label">Incorrect</div></div>
+        <div class="r-card"><span class="r-num" id="r-xp">0</span><div class="r-label">XP earned</div></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-again" onclick="resetAll()">Play again</button>
+        <a href="{% url 'dashboard' %}" class="btn-dash">Dashboard</a>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="ach-toast" id="ach-toast">
+  <div class="ach-icon" id="ach-icon">🏆</div>
+  <div class="ach-text">
+    <strong id="ach-title">Achievement!</strong>
+    <span id="ach-desc"></span>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const SCRIPT = '{{ script }}';
+let deck = [];
+let idx = 0;
+let correct = 0;
+let wrong = 0;
+let results = [];
+let duration = 60;
+let timeLeft = 60;
+let timerInterval = null;
+let answered = false;
+const CIRCUMFERENCE = 364.4;
+
+function setDuration(sec, btn) {
+  duration = sec;
+  document.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startTimer() {
+  const raw = sessionStorage.getItem('kana_chars');
+  if (!raw) { window.location.href = `/learn/${SCRIPT}/select/`; return; }
+  deck = shuffle(JSON.parse(raw));
+
+  idx = 0; correct = 0; wrong = 0; results = [];
+  timeLeft = duration;
+  answered = false;
+
+  document.getElementById('start-screen').style.display = 'none';
+  document.getElementById('results').classList.remove('show');
+  const gui = document.getElementById('game-ui');
+  gui.style.display = 'flex';
+  gui.style.flexDirection = 'column';
+
+  updateRing();
+  showChar();
+  document.getElementById('rom-input').focus();
+
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateRing();
+    if (timeLeft <= 0) endGame();
+  }, 1000);
+}
+
+function updateRing() {
+  const pct = timeLeft / duration;
+  const offset = CIRCUMFERENCE * (1 - pct);
+  const ring = document.getElementById('ring-fill');
+  const num  = document.getElementById('timer-num');
+  ring.style.strokeDashoffset = offset;
+  num.textContent = timeLeft;
+
+  if (timeLeft <= 10) {
+    ring.className = 'ring-fill danger';
+    num.className  = 'timer-num danger';
+  } else if (timeLeft <= 20) {
+    ring.className = 'ring-fill warning';
+    num.className  = 'timer-num warning';
+  } else {
+    ring.className = 'ring-fill';
+    num.className  = 'timer-num';
+  }
+}
+
+function showChar() {
+  if (deck.length === 0) return;
+  if (idx >= deck.length) idx = 0; // loop
+  const c = deck[idx];
+  document.getElementById('char-display').textContent = c.char;
+
+  let tag = SCRIPT;
+  if (SCRIPT === 'kana') {
+    const code = c.char.charCodeAt(0);
+    tag = (code >= 0x3040 && code <= 0x309F) ? 'hiragana' : 'katakana';
+  }
+  document.getElementById('char-tag').textContent = tag;
+
+  const input = document.getElementById('rom-input');
+  input.value = '';
+  input.className = 'rom-input';
+  input.disabled = false;
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('correct-answer').textContent = '';
+  document.getElementById('study-card').className = 'study-card';
+  answered = false;
+}
+
+function submitAnswer() {
+  if (timeLeft <= 0) return;
+  const c = deck[idx];
+  const input = document.getElementById('rom-input');
+  const val = input.value.trim().toLowerCase();
+  if (!val) return;
+
+  const isCorrect = val === c.rom.toLowerCase();
+  results.push({ char: c.char, rom: c.rom, correct: isCorrect });
+  answered = true;
+
+  if (isCorrect) {
+    correct++;
+    input.className = 'rom-input correct';
+    document.getElementById('feedback').textContent = '✓';
+    document.getElementById('feedback').className = 'feedback correct';
+    document.getElementById('study-card').className = 'study-card correct-flash';
+  } else {
+    wrong++;
+    input.className = 'rom-input wrong';
+    document.getElementById('feedback').textContent = `✗ → ${c.rom}`;
+    document.getElementById('feedback').className = 'feedback wrong';
+    document.getElementById('study-card').className = 'study-card wrong-flash';
+  }
+
+  document.getElementById('sc').textContent = correct;
+  document.getElementById('sw').textContent = wrong;
+  document.getElementById('sx').textContent = Math.floor(correct * 10 * 1.5);
+
+  setTimeout(() => { idx++; showChar(); }, 500);
+}
+
+function endGame() {
+  clearInterval(timerInterval);
+  document.getElementById('game-ui').style.display = 'none';
+  const res = document.getElementById('results');
+  res.classList.add('show');
+
+  const xp = Math.floor(correct * 10 * 1.5);
+  document.getElementById('r-correct').textContent = correct;
+  document.getElementById('r-wrong').textContent = wrong;
+  document.getElementById('r-xp').textContent = xp;
+
+  const total = correct + wrong;
+  const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
+  document.getElementById('r-msg').textContent =
+    `You answered ${total} characters — ${pct}% accuracy. Great speed drilling!`;
+
+  fetch('/api/progress/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+    body: JSON.stringify({ script: SCRIPT, results, correct, incorrect: wrong, mode: 'timer' })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.new_achievements && data.new_achievements.length > 0) {
+      showAchievements(data.new_achievements);
+    }
+  })
+  .catch(console.error);
+}
+
+function showAchievements(list) {
+  let i = 0;
+  function showNext() {
+    if (i >= list.length) return;
+    const a = list[i++];
+    document.getElementById('ach-icon').textContent  = a.icon;
+    document.getElementById('ach-title').textContent = a.title;
+    document.getElementById('ach-desc').textContent  = a.desc;
+    const toast = document.getElementById('ach-toast');
+    toast.classList.add('show');
+    setTimeout(() => { toast.classList.remove('show'); setTimeout(showNext, 400); }, 3000);
+  }
+  showNext();
+}
+
+function resetAll() {
+  document.getElementById('results').classList.remove('show');
+  document.getElementById('start-screen').style.display = 'flex';
+  document.getElementById('start-screen').style.flexDirection = 'column';
+}
+
+function getCookie(name) {
+  let v = null;
+  document.cookie.split(';').forEach(c => {
+    c = c.trim();
+    if (c.startsWith(name + '=')) v = decodeURIComponent(c.slice(name.length + 1));
+  });
+  return v;
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); submitAnswer(); }
+});
+</script>
+{% endblock %}

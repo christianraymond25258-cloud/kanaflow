@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Sign In Via Google — KanaFlow{% endblock %}
+
+{% block extra_style %}
+.auth-wrap { position: relative; z-index: 1; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+.auth-card { background: rgba(19,19,31,0.92); border: 1px solid rgba(56,189,248,0.18); border-radius: 24px; padding: 2.8rem 2.5rem; width: 100%; max-width: 420px; backdrop-filter: blur(20px); animation: slideUp 0.5s ease both; text-align: center; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+.auth-logo { font-size: 2.2rem; font-family: 'Noto Sans JP', sans-serif; color: #38bdf8; margin-bottom: 0.5rem; }
+.auth-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.4rem; }
+.auth-sub { color: #94a3b8; font-size: 0.88rem; margin-bottom: 2rem; line-height: 1.6; }
+.submit-btn { width: 100%; padding: 0.9rem; background: #38bdf8; color: #0a0a0f; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+.submit-btn:hover { background: #7dd3fc; transform: translateY(-1px); box-shadow: 0 6px 25px rgba(56,189,248,0.3); }
+.back-home { position: fixed; top: 1.5rem; left: 1.5rem; z-index: 10; color: #94a3b8; text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+.back-home:hover { color: #38bdf8; }
+{% endblock %}
+
+{% block content %}
+<a href="{% url 'landing' %}" class="back-home">← KanaFlow</a>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo">漢</div>
+    <h1 class="auth-title">One last step!</h1>
+    <p class="auth-sub">You're signing in via Google. Click continue to access your KanaFlow dashboard.</p>
+    <form method="post" action="{% url 'socialaccount_signup' %}">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="submit-btn">✦ Continue to KanaFlow</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

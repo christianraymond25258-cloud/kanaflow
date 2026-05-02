@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard — KanaFlow{% endblock %}
+
+{% block extra_style %}
+.shell { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 2.5rem; background: rgba(10,10,15,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(56,189,248,0.12); position: sticky; top: 0; z-index: 50; }
+.logo { font-size: 1.3rem; font-weight: 700; color: #38bdf8; font-family: 'Noto Sans JP', sans-serif; text-decoration: none; }
+.nav-links { display: flex; gap: 1.5rem; align-items: center; }
+.nav-links a { color: #94a3b8; text-decoration: none; font-size: 0.88rem; transition: color 0.2s; }
+.nav-links a:hover { color: #38bdf8; }
+.main { padding: 2.5rem; max-width: 800px; margin: 0 auto; width: 100%; }
+.page-title { font-size: 2rem; font-weight: 700; margin-bottom: 0.4rem; }
+.page-title span { color: #38bdf8; }
+.page-sub { color: #94a3b8; font-size: 0.92rem; margin-bottom: 2.5rem; }
+.podium { display: flex; align-items: flex-end; justify-content: center; gap: 1rem; margin-bottom: 3rem; }
+.podium-item { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
+.podium-avatar { border-radius: 50%; background: rgba(56,189,248,0.15); border: 2px solid rgba(56,189,248,0.3); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #38bdf8; }
+.podium-avatar.p1 { width: 72px; height: 72px; font-size: 1.8rem; border-color: #fbbf24; color: #fbbf24; background: rgba(251,191,36,0.1); }
+.podium-avatar.p2 { width: 60px; height: 60px; font-size: 1.4rem; border-color: #94a3b8; color: #94a3b8; background: rgba(148,163,184,0.1); }
+.podium-avatar.p3 { width: 54px; height: 54px; font-size: 1.2rem; border-color: #d97706; color: #d97706; background: rgba(217,119,6,0.1); }
+.podium-name { font-size: 0.82rem; font-weight: 600; color: #f0f4f8; }
+.podium-xp { font-size: 0.75rem; color: #38bdf8; }
+.podium-rank { font-size: 1.4rem; }
+.podium-block { border-radius: 12px 12px 0 0; width: 80px; display: flex; align-items: center; justify-content: center; }
+.podium-block.b1 { height: 90px; background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3); }
+.podium-block.b2 { height: 70px; background: rgba(148,163,184,0.1); border: 1px solid rgba(148,163,184,0.2); }
+.podium-block.b3 { height: 55px; background: rgba(217,119,6,0.1); border: 1px solid rgba(217,119,6,0.2); }
+.lb-list { background: #13131f; border: 1px solid rgba(56,189,248,0.1); border-radius: 20px; overflow: hidden; }
+.lb-row { display: flex; align-items: center; gap: 1.2rem; padding: 1.1rem 1.5rem; border-bottom: 1px solid rgba(56,189,248,0.06); transition: background 0.2s; }
+.lb-row:last-child { border-bottom: none; }
+.lb-row:hover { background: rgba(56,189,248,0.04); }
+.lb-row.is-me { background: rgba(56,189,248,0.08); border-left: 3px solid #38bdf8; }
+.lb-rank { font-size: 1rem; font-weight: 700; color: #475569; min-width: 30px; text-align: center; }
+.lb-rank.top1 { color: #fbbf24; }
+.lb-rank.top2 { color: #94a3b8; }
+.lb-rank.top3 { color: #d97706; }
+.lb-avatar { width: 40px; height: 40px; border-radius: 50%; background: rgba(56,189,248,0.12); border: 1px solid rgba(56,189,248,0.2); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #38bdf8; font-size: 0.9rem; flex-shrink: 0; }
+.lb-info { flex: 1; }
+.lb-name { font-weight: 600; font-size: 0.95rem; }
+.lb-sub { font-size: 0.75rem; color: #94a3b8; margin-top: 0.1rem; }
+.lb-xp { font-size: 1rem; font-weight: 700; color: #38bdf8; }
+.you-badge { background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.3); border-radius: 100px; padding: 0.15rem 0.6rem; font-size: 0.7rem; color: #38bdf8; font-weight: 600; margin-left: 0.5rem; }
+{% endblock %}
+
+{% block content %}
+<div class="shell">
+  <nav class="topbar">
+    <a class="logo" href="{% url 'dashboard' %}">漢 KanaFlow</a>
+    <div class="nav-links">
+      <a href="{% url 'dashboard' %}">Dashboard</a>
+      <a href="{% url 'profile' %}">My Profile</a>
+      <a href="{% url 'logout' %}" style="color:#f87171;">Sign out</a>
+    </div>
+    <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <main class="main">
+    <h1 class="page-title">🏆 <span>Leaderboard</span></h1>
+    <p class="page-sub">Top learners ranked by total XP earned. Keep studying to climb the ranks!</p>
+
+    {% if top_users|length >= 3 %}
+    <div class="podium">
+      <div class="podium-item">
+        <div class="podium-rank">🥈</div>
+        <div class="podium-avatar p2">{{ top_users.1.user.username|first|upper }}</div>
+        <div class="podium-name">{{ top_users.1.user.username }}</div>
+        <div class="podium-xp">⚡ {{ top_users.1.total_xp }}</div>
+        <div class="podium-block b2"></div>
+      </div>
+      <div class="podium-item">
+        <div class="podium-rank">🥇</div>
+        <div class="podium-avatar p1">{{ top_users.0.user.username|first|upper }}</div>
+        <div class="podium-name">{{ top_users.0.user.username }}</div>
+        <div class="podium-xp">⚡ {{ top_users.0.total_xp }}</div>
+        <div class="podium-block b1"></div>
+      </div>
+      <div class="podium-item">
+        <div class="podium-rank">🥉</div>
+        <div class="podium-avatar p3">{{ top_users.2.user.username|first|upper }}</div>
+        <div class="podium-name">{{ top_users.2.user.username }}</div>
+        <div class="podium-xp">⚡ {{ top_users.2.total_xp }}</div>
+        <div class="podium-block b3"></div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="lb-list">
+      {% for up in top_users %}
+      <div class="lb-row {% if up.user == request.user %}is-me{% endif %}">
+        <div class="lb-rank {% if forloop.counter == 1 %}top1{% elif forloop.counter == 2 %}top2{% elif forloop.counter == 3 %}top3{% endif %}">
+          {% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% elif forloop.counter == 3 %}🥉{% else %}{{ forloop.counter }}{% endif %}
+        </div>
+        <div class="lb-avatar">{{ up.user.username|first|upper }}</div>
+        <div class="lb-info">
+          <div class="lb-name">{{ up.user.username }}{% if up.user == request.user %}<span class="you-badge">you</span>{% endif %}</div>
+          <div class="lb-sub">{{ up.streak_days }} day streak 🔥</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="lb-xp">⚡ {{ up.total_xp }}</div>
+          <div style="font-size:0.72rem;color:#475569;">XP</div>
+        </div>
+      </div>
+      {% empty %}
+      <div style="text-align:center;padding:3rem;color:#475569;">No learners yet — be the first!</div>
+      {% endfor %}
+    </div>
+  </main>
+</div>
+{% endblock %}

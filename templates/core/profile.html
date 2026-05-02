@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% block title %}Profile — KanaFlow{% endblock %}
+
+{% block extra_style %}
+.shell { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 2.5rem; background: rgba(10,10,15,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(56,189,248,0.12); position: sticky; top: 0; z-index: 50; }
+.logo { font-size: 1.3rem; font-weight: 700; color: #38bdf8; font-family: 'Noto Sans JP', sans-serif; text-decoration: none; }
+.nav-links { display: flex; gap: 1.5rem; align-items: center; }
+.nav-links a { color: #94a3b8; text-decoration: none; font-size: 0.88rem; transition: color 0.2s; }
+.nav-links a:hover { color: #38bdf8; }
+.main { padding: 2.5rem; max-width: 1000px; margin: 0 auto; width: 100%; }
+.profile-hero { background: #13131f; border: 1px solid rgba(56,189,248,0.15); border-radius: 24px; padding: 2.5rem; display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem; }
+.avatar-big { width: 90px; height: 90px; border-radius: 50%; background: rgba(56,189,248,0.15); border: 2px solid rgba(56,189,248,0.4); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 700; color: #38bdf8; flex-shrink: 0; }
+.profile-info h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.3rem; }
+.profile-info p { color: #94a3b8; font-size: 0.9rem; margin-bottom: 1rem; }
+.badge-row { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+.badge { display: inline-flex; align-items: center; gap: 0.4rem; border-radius: 100px; padding: 0.3rem 0.9rem; font-size: 0.78rem; font-weight: 600; }
+.badge-xp { background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.2); color: #38bdf8; }
+.badge-streak { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.2); color: #fbbf24; }
+.badge-sessions { background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.2); color: #a78bfa; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 1rem; margin-bottom: 2rem; }
+.stat-card { background: #13131f; border: 1px solid rgba(56,189,248,0.1); border-radius: 16px; padding: 1.3rem 1.5rem; text-align: center; transition: all 0.3s; }
+.stat-card:hover { border-color: rgba(56,189,248,0.35); transform: translateY(-2px); }
+.stat-num { font-size: 2rem; font-weight: 700; color: #38bdf8; display: block; }
+.stat-label { font-size: 0.75rem; color: #94a3b8; margin-top: 0.2rem; }
+.progress-section { background: #13131f; border: 1px solid rgba(56,189,248,0.1); border-radius: 20px; padding: 2rem; margin-bottom: 2rem; }
+.section-title { font-size: 1rem; font-weight: 600; margin-bottom: 1.5rem; color: #f0f4f8; }
+.prog-item { margin-bottom: 1.2rem; }
+.prog-item:last-child { margin-bottom: 0; }
+.prog-header { display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.85rem; }
+.prog-header span:first-child { color: #f0f4f8; font-weight: 500; }
+.prog-header span:last-child { color: #94a3b8; }
+.prog-bar { background: rgba(56,189,248,0.08); border-radius: 100px; height: 8px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 100px; background: linear-gradient(90deg,#38bdf8,#7dd3fc); transition: width 1s ease; }
+.prog-fill-purple { background: linear-gradient(90deg,#a78bfa,#c4b5fd); }
+.prog-fill-green { background: linear-gradient(90deg,#34d399,#6ee7b7); }
+.chart-section { background: #13131f; border: 1px solid rgba(56,189,248,0.1); border-radius: 20px; padding: 2rem; margin-bottom: 2rem; }
+.chart-wrap { position: relative; height: 200px; }
+.sessions-section { background: #13131f; border: 1px solid rgba(56,189,248,0.1); border-radius: 20px; overflow: hidden; margin-bottom: 2rem; }
+.sessions-header { padding: 1.5rem 2rem 0; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 480px; }
+th { text-align: left; font-size: 0.75rem; color: #94a3b8; font-weight: 500; padding: 0.8rem 1.5rem; border-bottom: 1px solid rgba(56,189,248,0.08); }
+td { padding: 1rem 1.5rem; font-size: 0.88rem; border-bottom: 1px solid rgba(56,189,248,0.05); }
+tr:last-child td { border-bottom: none; }
+.tag { display: inline-block; border-radius: 100px; padding: 0.2rem 0.7rem; font-size: 0.72rem; font-weight: 600; }
+.tag-h { background: rgba(56,189,248,0.12); color: #38bdf8; }
+.tag-k { background: rgba(167,139,250,0.12); color: #a78bfa; }
+.tag-j { background: rgba(52,211,153,0.12); color: #34d399; }
+.tag-kana { background: rgba(251,191,36,0.12); color: #fbbf24; }
+{% endblock %}
+
+{% block content %}
+<div class="shell">
+  <nav class="topbar">
+    <a class="logo" href="{% url 'dashboard' %}">漢 KanaFlow</a>
+    <div class="nav-links">
+      <a href="{% url 'dashboard' %}">Dashboard</a>
+      <a href="{% url 'leaderboard' %}">Leaderboard</a>
+      <a href="{% url 'logout' %}" style="color:#f87171;">Sign out</a>
+    </div>
+    <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <main class="main">
+    <div class="profile-hero">
+      <div class="avatar-big">{{ request.user.username|first|upper }}</div>
+      <div class="profile-info">
+        <h1>{{ request.user.username }}</h1>
+        <p>{{ request.user.email }} · Member since {{ request.user.date_joined|date:"M Y" }}</p>
+        <div class="badge-row">
+          <span class="badge badge-xp">⚡ {{ profile.total_xp }} XP</span>
+          <span class="badge badge-streak">🔥 {{ profile.streak_days }} day streak</span>
+          <span class="badge badge-sessions">📚 {{ total_sessions }} sessions</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card"><span class="stat-num">{{ profile.total_xp }}</span><div class="stat-label">Total XP</div></div>
+      <div class="stat-card"><span class="stat-num">{{ profile.streak_days }}</span><div class="stat-label">Day streak 🔥</div></div>
+      <div class="stat-card"><span class="stat-num">{{ total_mastered }}</span><div class="stat-label">Chars mastered</div></div>
+      <div class="stat-card"><span class="stat-num">{{ total_sessions }}</span><div class="stat-label">Sessions</div></div>
+      <div class="stat-card"><span class="stat-num">{{ hiragana_mastered }}</span><div class="stat-label">Hiragana</div></div>
+      <div class="stat-card"><span class="stat-num">{{ katakana_mastered }}</span><div class="stat-label">Katakana</div></div>
+      <div class="stat-card"><span class="stat-num">{{ kanji_mastered }}</span><div class="stat-label">Kanji</div></div>
+    </div>
+
+    <div class="progress-section">
+      <div class="section-title">Script progress</div>
+      <div class="prog-item">
+        <div class="prog-header"><span>Hiragana</span><span>{{ hiragana_mastered }} / {{ hiragana_total }}</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width: {% widthratio hiragana_mastered hiragana_total 100 %}%"></div></div>
+      </div>
+      <div class="prog-item">
+        <div class="prog-header"><span>Katakana</span><span>{{ katakana_mastered }} / {{ katakana_total }}</span></div>
+        <div class="prog-bar"><div class="prog-fill prog-fill-purple" style="width: {% widthratio katakana_mastered katakana_total 100 %}%"></div></div>
+      </div>
+      <div class="prog-item">
+        <div class="prog-header"><span>Kanji</span><span>{{ kanji_mastered }} / {{ kanji_total }}</span></div>
+        <div class="prog-bar"><div class="prog-fill prog-fill-green" style="width: {% widthratio kanji_mastered kanji_total 100 %}%"></div></div>
+      </div>
+    </div>
+
+    <div class="chart-section">
+      <div class="section-title">XP earned — last 14 days</div>
+      <div class="chart-wrap"><canvas id="xpChart"></canvas></div>
+    </div>
+
+    <!-- Achievements -->
+    <div class="progress-section" style="margin-bottom:2rem;">
+      <div class="section-title">
+        Achievements
+        <span style="font-size:0.78rem;color:#94a3b8;font-weight:400;margin-left:0.5rem;">{{ earned_count }} / {{ total_achievements }} unlocked</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;">
+        {% for a in achievements %}
+        <div style="background:{% if a.earned %}rgba(56,189,248,0.06){% else %}rgba(255,255,255,0.02){% endif %};
+                    border:1px solid {% if a.earned %}rgba(56,189,248,0.25){% else %}rgba(255,255,255,0.06){% endif %};
+                    border-radius:14px;padding:1rem;
+                    opacity:{% if a.earned %}1{% else %}0.4{% endif %};transition:all 0.3s;">
+          <div style="font-size:1.8rem;margin-bottom:0.4rem;">{{ a.icon }}</div>
+          <div style="font-size:0.88rem;font-weight:600;color:{% if a.earned %}#f0f4f8{% else %}#475569{% endif %};">{{ a.title }}</div>
+          <div style="font-size:0.75rem;color:#475569;margin-top:0.2rem;line-height:1.4;">{{ a.desc }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="sessions-section">
+      <div class="sessions-header"><div class="section-title">Recent sessions</div></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Script</th><th>Correct</th><th>Incorrect</th><th>XP</th><th>Date</th></tr>
+          </thead>
+          <tbody>
+            {% for s in all_sessions %}
+            <tr>
+              <td><span class="tag {% if s.script == 'hiragana' %}tag-h{% elif s.script == 'katakana' %}tag-k{% elif s.script == 'kana' %}tag-kana{% else %}tag-j{% endif %}">{{ s.script|capfirst }}</span></td>
+              <td style="color:#34d399;">✓ {{ s.correct }}</td>
+              <td style="color:#f87171;">✗ {{ s.incorrect }}</td>
+              <td style="color:#38bdf8;">⚡ {{ s.xp_earned }}</td>
+              <td style="color:#94a3b8;">{{ s.created_at|date:"M d, Y · H:i" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const data = {{ xp_chart_json|safe }};
+const ctx = document.getElementById('xpChart').getContext('2d');
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: data.map(d => d.date),
+    datasets: [{
+      label: 'XP',
+      data: data.map(d => d.xp),
+      backgroundColor: 'rgba(56,189,248,0.25)',
+      borderColor: '#38bdf8',
+      borderWidth: 2,
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#13131f',
+        borderColor: 'rgba(56,189,248,0.3)',
+        borderWidth: 1,
+        titleColor: '#94a3b8',
+        bodyColor: '#38bdf8',
+        callbacks: { label: ctx => `⚡ ${ctx.raw} XP` }
+      }
+    },
+    scales: {
+      x: { grid: { color: 'rgba(56,189,248,0.05)' }, ticks: { color: '#475569', font: { size: 11 } } },
+      y: { grid: { color: 'rgba(56,189,248,0.05)' }, ticks: { color: '#475569', font: { size: 11 } }, beginAtZero: true }
+    }
+  }
+});
+</script>
+{% endblock %}

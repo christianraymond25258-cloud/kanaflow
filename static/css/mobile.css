@@ -1,0 +1,423 @@
+/* ═══════════════════════════════════════════════════════
+   KanaFlow — Mobile Responsive Styles
+   Applies to all screen sizes below 768px
+═══════════════════════════════════════════════════════ */
+
+/* ── General ────────────────────────────────────────── */
+* { box-sizing: border-box; }
+
+@media (max-width: 768px) {
+
+  /* ── Navigation ── */
+  nav, .topbar {
+    padding: 0.9rem 1.2rem !important;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .nav-links {
+    display: none;
+    flex-direction: column;
+    width: 100%;
+    background: rgba(10,10,15,0.98);
+    border-top: 1px solid rgba(56,189,248,0.12);
+    padding: 1rem 0;
+    gap: 0.8rem !important;
+  }
+
+  .nav-links.open {
+    display: flex;
+  }
+
+  .hamburger {
+    display: flex !important;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+    padding: 4px;
+    background: none;
+    border: none;
+  }
+
+  .hamburger span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: #94a3b8;
+    border-radius: 2px;
+    transition: all 0.3s;
+  }
+
+  .user-bar {
+    gap: 0.6rem !important;
+    flex-wrap: wrap;
+  }
+
+  .xp-badge, .streak-badge {
+    font-size: 0.75rem !important;
+    padding: 0.25rem 0.6rem !important;
+  }
+
+  .logout-link {
+    font-size: 0.75rem !important;
+  }
+
+  /* ── Landing page ── */
+  .hero {
+    padding: 6rem 1.2rem 2rem !important;
+    min-height: auto !important;
+  }
+
+  .hero h1 {
+    font-size: 2.2rem !important;
+  }
+
+  .hero-sub {
+    font-size: 0.95rem !important;
+  }
+
+  .hero-cta {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem !important;
+  }
+
+  .btn-primary, .btn-secondary {
+    width: 100%;
+    justify-content: center;
+    padding: 0.85rem 1.5rem !important;
+  }
+
+  .kana-strip {
+    gap: 0.6rem !important;
+  }
+
+  .kana-card {
+    min-width: 64px !important;
+    padding: 0.7rem 0.9rem !important;
+  }
+
+  .kana-char {
+    font-size: 1.6rem !important;
+  }
+
+  .stats-bar {
+    gap: 1.5rem !important;
+    padding: 2rem 1rem !important;
+    flex-wrap: wrap;
+  }
+
+  .stat-num {
+    font-size: 1.6rem !important;
+  }
+
+  .features-grid, .scripts-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Dashboard ── */
+  .main {
+    padding: 1.5rem 1rem !important;
+  }
+
+  .welcome h1 {
+    font-size: 1.4rem !important;
+  }
+
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .scripts-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  .script-card {
+    padding: 1.4rem !important;
+  }
+
+  .script-char {
+    font-size: 2.2rem !important;
+  }
+
+  /* ── Select characters page ── */
+  .char-grid {
+    gap: 0.5rem !important;
+  }
+
+  .char-tile {
+    width: 66px !important;
+    height: 76px !important;
+    border-radius: 10px !important;
+  }
+
+  .tile-char {
+    font-size: 1.7rem !important;
+  }
+
+  .tile-rom {
+    font-size: 0.6rem !important;
+  }
+
+  .tile-meaning {
+    font-size: 0.5rem !important;
+  }
+
+  .toolbar {
+    gap: 0.5rem !important;
+    flex-wrap: wrap;
+  }
+
+  .btn-selall, .btn-clr, .btn-spaced {
+    font-size: 0.78rem !important;
+    padding: 0.4rem 0.8rem !important;
+  }
+
+  .sticky-footer {
+    padding: 1rem !important;
+    flex-direction: column;
+    gap: 0.8rem;
+    align-items: stretch !important;
+  }
+
+  .footer-btns {
+    display: flex;
+    gap: 0.6rem;
+  }
+
+  .btn-start, .btn-timer {
+    flex: 1;
+    padding: 0.85rem 1rem !important;
+    font-size: 0.9rem !important;
+  }
+
+  .footer-info {
+    text-align: center;
+  }
+
+  /* ── Study page ── */
+  .study-card {
+    padding: 2rem 1.2rem !important;
+    border-radius: 20px !important;
+  }
+
+  .char-display {
+    font-size: 5.5rem !important;
+  }
+
+  .rom-input {
+    font-size: 1.1rem !important;
+    padding: 0.8rem 1rem !important;
+  }
+
+  .score-row {
+    gap: 0.6rem !important;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .submit-btn {
+    width: 100%;
+    padding: 0.85rem !important;
+  }
+
+  .skip-btn {
+    width: 100%;
+  }
+
+  .results-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.6rem !important;
+  }
+
+  .r-num {
+    font-size: 1.5rem !important;
+  }
+
+  .missed-grid {
+    gap: 0.4rem !important;
+  }
+
+  .btn-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-again, .btn-reselect, .btn-dash {
+    text-align: center;
+    padding: 0.85rem !important;
+  }
+
+  /* ── Timer page ── */
+  .timer-ring-wrap {
+    width: 110px !important;
+    height: 110px !important;
+  }
+
+  .timer-num {
+    font-size: 2rem !important;
+  }
+
+  .duration-row {
+    gap: 0.5rem !important;
+  }
+
+  .dur-btn {
+    padding: 0.5rem 1rem !important;
+    font-size: 0.82rem !important;
+  }
+
+  .start-screen h2 {
+    font-size: 1.6rem !important;
+  }
+
+  /* ── Profile page ── */
+  .profile-hero {
+    flex-direction: column !important;
+    text-align: center;
+    padding: 1.8rem !important;
+    gap: 1rem !important;
+  }
+
+  .avatar-big {
+    width: 70px !important;
+    height: 70px !important;
+    font-size: 1.8rem !important;
+  }
+
+  .badge-row {
+    justify-content: center;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .chart-wrap {
+    height: 160px !important;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+  }
+
+  table {
+    min-width: 500px;
+  }
+
+  /* ── Leaderboard ── */
+  .podium {
+    gap: 0.6rem !important;
+  }
+
+  .podium-avatar.p1 { width: 58px !important; height: 58px !important; font-size: 1.4rem !important; }
+  .podium-avatar.p2 { width: 48px !important; height: 48px !important; font-size: 1.1rem !important; }
+  .podium-avatar.p3 { width: 44px !important; height: 44px !important; font-size: 1rem !important; }
+
+  .podium-block { width: 64px !important; }
+  .podium-block.b1 { height: 70px !important; }
+  .podium-block.b2 { height: 55px !important; }
+  .podium-block.b3 { height: 44px !important; }
+
+  .lb-row {
+    padding: 0.9rem 1rem !important;
+    gap: 0.8rem !important;
+  }
+
+  .lb-name { font-size: 0.88rem !important; }
+  .lb-xp { font-size: 0.9rem !important; }
+
+  /* ── Auth pages ── */
+  .auth-card {
+    padding: 2rem 1.5rem !important;
+    border-radius: 18px !important;
+  }
+
+  .auth-title {
+    font-size: 1.3rem !important;
+  }
+
+  .back-home {
+    position: absolute !important;
+    top: 1rem !important;
+    left: 1rem !important;
+  }
+
+  /* ── Toasts ── */
+  .xp-toast, .ach-toast {
+    bottom: 1rem !important;
+    right: 1rem !important;
+    left: 1rem !important;
+    max-width: none !important;
+  }
+
+  /* ── Page titles ── */
+  .page-title {
+    font-size: 1.5rem !important;
+  }
+
+  .section-title {
+    font-size: 0.95rem !important;
+  }
+
+  /* ── Due banner ── */
+  .due-banner {
+    flex-direction: column !important;
+    gap: 0.6rem !important;
+    align-items: flex-start !important;
+  }
+
+  .due-banner button {
+    margin-left: 0 !important;
+  }
+}
+
+/* ── Tablet (768px - 1024px) ── */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .scripts-row {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .stats-row {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  .hero h1 {
+    font-size: 3.5rem !important;
+  }
+
+  .main {
+    padding: 2rem 1.5rem !important;
+  }
+}
+
+/* ── Hamburger hidden on desktop ── */
+.hamburger {
+  display: none;
+}
+
+/* ── Smooth transitions ── */
+.nav-links {
+  transition: all 0.3s ease;
+}
+
+/* ── Better tap targets on mobile ── */
+@media (max-width: 768px) {
+  button, a, input {
+    min-height: 44px;
+  }
+
+  .char-tile {
+    min-height: 44px;
+  }
+}
+
+/* ── Prevent horizontal scroll ── */
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}

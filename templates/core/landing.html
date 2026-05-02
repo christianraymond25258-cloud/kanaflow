@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KanaFlow — Master Japanese Characters</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --black: #0a0a0f;
+      --black2: #0f0f1a;
+      --card: #13131f;
+      --card2: #1a1a2e;
+      --blue: #38bdf8;
+      --blue2: #0ea5e9;
+      --blue3: #7dd3fc;
+      --blue-dim: rgba(56,189,248,0.12);
+      --blue-glow: rgba(56,189,248,0.25);
+      --text: #f0f4f8;
+      --muted: #94a3b8;
+      --border: rgba(56,189,248,0.15);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* ── Canvas background ── */
+    #bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.2rem 4rem;
+      background: rgba(10,10,15,0.7);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--blue);
+      text-decoration: none;
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+
+    .logo span { color: var(--text); font-weight: 300; }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--blue); }
+
+    .btn-nav {
+      background: var(--blue-dim);
+      border: 1px solid var(--border);
+      color: var(--blue) !important;
+      padding: 0.5rem 1.2rem;
+      border-radius: 8px;
+      font-weight: 500;
+      transition: all 0.2s !important;
+    }
+
+    .btn-nav:hover {
+      background: var(--blue) !important;
+      color: var(--black) !important;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 8rem 2rem 4rem;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--blue-dim);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 0.4rem 1rem;
+      font-size: 0.8rem;
+      color: var(--blue3);
+      margin-bottom: 2rem;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .hero-badge-dot {
+      width: 6px; height: 6px;
+      background: var(--blue);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.8rem, 7vw, 5.5rem);
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      animation: fadeUp 0.6s ease 0.1s both;
+    }
+
+    .hero h1 .line1 { display: block; color: var(--text); }
+
+    .hero h1 .line2 {
+      display: block;
+      background: linear-gradient(135deg, var(--blue), var(--blue3));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+
+    .hero-sub {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 560px;
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+      animation: fadeUp 0.6s ease 0.2s both;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      animation: fadeUp 0.6s ease 0.3s both;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--blue);
+      color: var(--black);
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 0.9rem 2.2rem;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-primary:hover {
+      background: var(--blue3);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px var(--blue-glow);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: transparent;
+      color: var(--text);
+      font-weight: 500;
+      font-size: 1rem;
+      padding: 0.9rem 2.2rem;
+      border-radius: 12px;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--blue);
+      color: var(--blue);
+      transform: translateY(-2px);
+    }
+
+    /* ── Floating kana preview ── */
+    .kana-strip {
+      display: flex;
+      gap: 1rem;
+      margin-top: 4rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      animation: fadeUp 0.6s ease 0.4s both;
+    }
+
+    .kana-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1rem 1.4rem;
+      text-align: center;
+      min-width: 80px;
+      transition: all 0.3s;
+      cursor: default;
+    }
+
+    .kana-card:hover {
+      border-color: var(--blue);
+      background: var(--blue-dim);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 30px var(--blue-glow);
+    }
+
+    .kana-char {
+      font-size: 2rem;
+      font-family: 'Noto Sans JP', sans-serif;
+      color: var(--blue);
+      display: block;
+      line-height: 1;
+    }
+
+    .kana-rom {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 0.3rem;
+      display: block;
+    }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: center;
+      gap: 4rem;
+      padding: 3rem 2rem;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: rgba(19,19,31,0.6);
+      backdrop-filter: blur(10px);
+    }
+
+    .stat { text-align: center; }
+
+    .stat-num {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--blue);
+      display: block;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+
+    /* ── Features ── */
+    .section {
+      position: relative;
+      z-index: 1;
+      padding: 6rem 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      text-align: center;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .section-sub {
+      text-align: center;
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 500px;
+      margin: 0 auto 3.5rem;
+      line-height: 1.7;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .feature-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem;
+      transition: all 0.3s;
+    }
+
+    .feature-card:hover {
+      border-color: var(--blue);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px var(--blue-glow);
+    }
+
+    .feature-icon {
+      width: 52px; height: 52px;
+      background: var(--blue-dim);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      margin-bottom: 1.2rem;
+      font-family: 'Noto Sans JP', sans-serif;
+      color: var(--blue);
+    }
+
+    .feature-card h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.6rem;
+    }
+
+    .feature-card p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    /* ── Scripts section ── */
+    .scripts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .script-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem;
+      text-align: center;
+      transition: all 0.3s;
+      text-decoration: none;
+      color: var(--text);
+      display: block;
+    }
+
+    .script-card:hover {
+      border-color: var(--blue);
+      transform: translateY(-6px);
+      box-shadow: 0 16px 50px var(--blue-glow);
+    }
+
+    .script-big {
+      font-size: 4rem;
+      font-family: 'Noto Sans JP', sans-serif;
+      color: var(--blue);
+      display: block;
+      margin-bottom: 0.8rem;
+      line-height: 1;
+    }
+
+    .script-card h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+    }
+
+    .script-card p {
+      color: var(--muted);
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+
+    .script-count {
+      display: inline-block;
+      background: var(--blue-dim);
+      color: var(--blue3);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.8rem;
+      margin-top: 1rem;
+    }
+
+    /* ── CTA Section ── */
+    .cta-section {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 6rem 2rem;
+      background: var(--card2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cta-section h2 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .cta-section p {
+      color: var(--muted);
+      font-size: 1.05rem;
+      margin-bottom: 2.5rem;
+    }
+
+    /* ── Footer ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border);
+    }
+
+    footer a { color: var(--blue); text-decoration: none; }
+
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+<!-- Animated canvas background -->
+<canvas id="bg-canvas"></canvas>
+
+<!-- Nav -->
+<nav>
+  <a class="logo" href="#">漢<span>KanaFlow</span></a>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#scripts">Scripts</a></li>
+    <li><a href="{% url 'account_login' %}">Login</a></li>
+    <li><a href="{% url 'account_signup' %}" class="btn-nav">Sign Up Free</a></li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-badge">
+    <span class="hero-badge-dot"></span>
+    Learn Japanese writing systems the fun way
+  </div>
+
+  <h1>
+    <span class="line1">Master Japanese.</span>
+    <span class="line2">あ ア 漢</span>
+  </h1>
+
+  <p class="hero-sub">
+    Learn Hiragana, Katakana and Kanji through beautiful flashcards,
+    spaced repetition, and instant feedback. Go from zero to fluent — one character at a time.
+  </p>
+
+  <div class="hero-cta">
+    <a href="{% url 'account_signup' %}" class="btn-primary">
+      ✦ Get Started Free
+    </a>
+    <a href="#scripts" class="btn-secondary">
+      See the scripts →
+    </a>
+  </div>
+
+  <!-- Floating kana cards -->
+  <div class="kana-strip">
+    {% for item in kana_samples %}
+    <div class="kana-card">
+      <span class="kana-char">{{ item.char }}</span>
+      <span class="kana-rom">{{ item.rom }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Stats -->
+<div class="stats-bar">
+  <div class="stat">
+    <span class="stat-num">46</span>
+    <span class="stat-label">Hiragana characters</span>
+  </div>
+  <div class="stat">
+    <span class="stat-num">46</span>
+    <span class="stat-label">Katakana characters</span>
+  </div>
+  <div class="stat">
+    <span class="stat-num">2000+</span>
+    <span class="stat-label">Essential Kanji</span>
+  </div>
+  <div class="stat">
+    <span class="stat-num">∞</span>
+    <span class="stat-label">Practice sessions</span>
+  </div>
+</div>
+
+<!-- Features -->
+<section class="section" id="features">
+  <p class="section-label reveal">Why KanaFlow</p>
+  <h2 class="section-title reveal">Built to make you remember</h2>
+  <p class="section-sub reveal">Every feature is designed around how your brain actually learns and retains information.</p>
+
+  <div class="features-grid">
+    <div class="feature-card reveal">
+      <div class="feature-icon">あ</div>
+      <h3>Flashcard Drilling</h3>
+      <p>Flip through characters with instant romanji reveals. Build muscle memory through repetition that actually feels good.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">🧠</div>
+      <h3>Spaced Repetition</h3>
+      <p>Our algorithm surfaces the characters you keep forgetting, right when you need to see them again.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">⚡</div>
+      <h3>XP & Streaks</h3>
+      <p>Earn experience points for every correct answer. Build daily streaks and watch your mastery grow.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">漢</div>
+      <h3>Kanji with Context</h3>
+      <p>Learn kanji with their meanings, readings, and stroke order — not just isolated symbols.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">📊</div>
+      <h3>Progress Tracking</h3>
+      <p>See exactly which characters you've mastered and which need more work with beautiful progress charts.</p>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">ア</div>
+      <h3>All Three Scripts</h3>
+      <p>Hiragana, Katakana, and Kanji — all in one place, with a clear learning path from beginner to advanced.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Scripts -->
+<section class="section" id="scripts">
+  <p class="section-label reveal">What you'll learn</p>
+  <h2 class="section-title reveal">Three writing systems. One app.</h2>
+  <p class="section-sub reveal">Japanese uses three distinct scripts. We'll guide you through all of them.</p>
+
+  <div class="scripts-grid">
+    <div class="script-card reveal">
+      <span class="script-big">あ</span>
+      <h3>Hiragana</h3>
+      <p>The foundation of Japanese writing. Used for native words, grammar, and pronunciation guides.</p>
+      <span class="script-count">46 characters</span>
+    </div>
+    <div class="script-card reveal">
+      <span class="script-big">ア</span>
+      <h3>Katakana</h3>
+      <p>Used for foreign words, loanwords, and emphasis. Same sounds as hiragana, different shapes.</p>
+      <span class="script-count">46 characters</span>
+    </div>
+    <div class="script-card reveal">
+      <span class="script-big">漢</span>
+      <h3>Kanji</h3>
+      <p>Chinese-origin characters with Japanese readings. Master the 2000 most essential ones.</p>
+      <span class="script-count">2000+ characters</span>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2>Ready to start your journey?</h2>
+  <p>Join thousands of learners mastering Japanese every day. It's completely free to begin.</p>
+  <a href="{% url 'account_signup' %}" class="btn-primary" style="font-size:1.1rem; padding: 1rem 2.8rem;">
+    ✦ Start Learning Now
+  </a>
+</section>
+
+<!-- Footer -->
+<footer>
+  <p>Built with ❤️ for Japanese learners · <a href="{% url 'account_login' %}">Login</a> · <a href="{% url 'account_signup' %}">Register</a></p>
+</footer>
+
+<script>
+  // ── Animated floating kana background ──
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  const kana = ['あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ',
+                 'ア','イ','ウ','エ','オ','カ','キ','ク','ケ','コ','サ','シ','ス','セ','ソ',
+                 '漢','字','語','日','本','人','山','川','火','水','木','金','土','天','空'];
+
+  let particles = [];
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
+  function init() {
+    particles = [];
+    for (let i = 0; i < 55; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        char: kana[Math.floor(Math.random() * kana.length)],
+        size: Math.random() * 22 + 10,
+        speed: Math.random() * 0.4 + 0.1,
+        opacity: Math.random() * 0.12 + 0.03,
+        drift: (Math.random() - 0.5) * 0.3,
+      });
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      ctx.font = `${p.size}px 'Noto Sans JP', sans-serif`;
+      ctx.fillStyle = `rgba(56,189,248,${p.opacity})`;
+      ctx.fillText(p.char, p.x, p.y);
+      p.y -= p.speed;
+      p.x += p.drift;
+      if (p.y < -40) {
+        p.y = canvas.height + 40;
+        p.x = Math.random() * canvas.width;
+        p.char = kana[Math.floor(Math.random() * kana.length)];
+      }
+      if (p.x < -40) p.x = canvas.width + 40;
+      if (p.x > canvas.width + 40) p.x = -40;
+    });
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', () => { resize(); init(); });
+  resize(); init(); draw();
+
+  // ── Scroll reveal ──
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 80);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(r => observer.observe(r));
+</script>
+
+</body>
+</html>
