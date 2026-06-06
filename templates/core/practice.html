@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>JiKana — Practice</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+JP:wght@300;400;700;900&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --black: #080810; --card: #111120;
+      --blue: #38bdf8; --blue3: #7dd3fc;
+      --blue-dim: rgba(56,189,248,0.10);
+      --blue-glow: rgba(56,189,248,0.25);
+      --text: #f0f4f8; --muted: #94a3b8;
+      --border: rgba(56,189,248,0.15);
+      --green: #34d399; --red: #f87171;
+    }
+    body { background: var(--black); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden; }
+    #bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+    .topbar { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 1rem 2.5rem; background: rgba(8,8,16,0.9); backdrop-filter: blur(24px); border-bottom: 1px solid rgba(56,189,248,0.08); }
+    .logo { font-size: 1.4rem; font-weight: 800; color: var(--text); text-decoration: none; letter-spacing: -0.02em; }
+    .logo .ji { color: var(--blue); }
+    .back-btn { color: var(--muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+    .back-btn:hover { color: var(--blue); }
+
+    /* ── Setup screen ── */
+    .setup-screen {
+      position: relative; z-index: 1;
+      min-height: calc(100vh - 65px);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 3rem 2rem; text-align: center;
+    }
+    .setup-screen h2 { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.5rem; }
+    .setup-screen h2 span { color: var(--blue); }
+    .setup-screen p { color: var(--muted); font-size: 0.95rem; margin-bottom: 3rem; line-height: 1.6; max-width: 460px; }
+
+    .script-options { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-bottom: 2.5rem; }
+    .script-opt {
+      background: var(--card); border: 2px solid rgba(56,189,248,0.12);
+      border-radius: 16px; padding: 1.5rem 2rem;
+      cursor: pointer; transition: all 0.25s;
+      min-width: 140px; text-align: center;
+    }
+    .script-opt:hover { border-color: rgba(56,189,248,0.4); transform: translateY(-3px); }
+    .script-opt.selected { border-color: var(--blue); background: rgba(56,189,248,0.08); box-shadow: 0 0 0 3px rgba(56,189,248,0.12); }
+    .opt-char { font-size: 2.5rem; font-family: 'Noto Sans JP', sans-serif; color: var(--blue); display: block; line-height: 1; margin-bottom: 0.5rem; }
+    .opt-label { font-size: 0.85rem; font-weight: 600; }
+    .opt-count { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; }
+
+    .start-btn {
+      background: var(--blue); color: #080810;
+      border: none; border-radius: 14px;
+      padding: 1rem 3rem; font-size: 1.05rem; font-weight: 800;
+      cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif;
+      box-shadow: 0 0 30px rgba(56,189,248,0.25);
+    }
+    .start-btn:hover { background: var(--blue3); transform: translateY(-2px); box-shadow: 0 8px 40px rgba(56,189,248,0.4); }
+    .start-btn:disabled { background: #1e293b; color: #475569; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* ── Practice screen ── */
+    .practice-screen {
+      display: none; position: relative; z-index: 1;
+      min-height: calc(100vh - 65px);
+      flex-direction: column; align-items: center;
+      padding: 2.5rem 1.5rem;
+    }
+    .practice-screen.active { display: flex; }
+
+    /* Score bar */
+    .score-bar { display: flex; gap: 1rem; margin-bottom: 2.5rem; flex-wrap: wrap; justify-content: center; }
+    .score-pill { border-radius: 100px; padding: 0.35rem 1rem; font-size: 0.82rem; font-weight: 700; }
+    .pill-c { background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.25); color: var(--green); }
+    .pill-w { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.25); color: var(--red); }
+    .pill-x { background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.2); color: var(--blue); }
+    .pill-streak { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.2); color: #fbbf24; }
+
+    /* Card */
+    .card-wrap { width: 100%; max-width: 480px; margin-bottom: 2rem; }
+    .study-card {
+      background: var(--card);
+      border: 2px solid rgba(56,189,248,0.15);
+      border-radius: 28px;
+      padding: 3rem 2.5rem;
+      display: flex; flex-direction: column;
+      align-items: center; text-align: center;
+      transition: all 0.3s;
+      position: relative; overflow: hidden;
+    }
+    .study-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--blue), transparent);
+    }
+    .study-card.flash-correct { border-color: var(--green); box-shadow: 0 0 40px rgba(52,211,153,0.15); }
+    .study-card.flash-wrong { border-color: var(--red); box-shadow: 0 0 40px rgba(248,113,113,0.15); }
+
+    .char-big { font-size: 9rem; font-family: 'Noto Sans JP', sans-serif; color: var(--blue); line-height: 1; margin-bottom: 0.3rem; filter: drop-shadow(0 0 20px rgba(56,189,248,0.3)); }
+    .char-script { font-size: 0.7rem; color: #475569; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2rem; }
+
+    .input-row { width: 100%; max-width: 300px; margin-bottom: 0.8rem; }
+    .rom-input {
+      width: 100%; padding: 1rem 1.2rem; text-align: center;
+      background: rgba(8,8,16,0.8);
+      border: 2px solid rgba(56,189,248,0.2);
+      border-radius: 14px; color: var(--text);
+      font-size: 1.4rem; font-weight: 700;
+      font-family: 'Inter', sans-serif; outline: none;
+      transition: all 0.2s; letter-spacing: 0.05em;
+    }
+    .rom-input:focus { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(56,189,248,0.1); }
+    .rom-input.correct { border-color: var(--green); background: rgba(52,211,153,0.06); color: var(--green); }
+    .rom-input.wrong { border-color: var(--red); background: rgba(248,113,113,0.06); color: var(--red); }
+    .rom-input::placeholder { color: #334155; font-weight: 400; font-size: 1rem; }
+
+    .feedback-text { font-size: 1rem; font-weight: 700; min-height: 1.5rem; }
+    .feedback-text.correct { color: var(--green); }
+    .feedback-text.wrong { color: var(--red); }
+    .answer-reveal { font-size: 0.85rem; color: var(--muted); min-height: 1.2rem; margin-top: 0.2rem; }
+
+    .action-row { display: flex; gap: 0.8rem; margin-top: 1.5rem; flex-wrap: wrap; justify-content: center; }
+    .check-btn {
+      background: var(--blue); color: #080810;
+      border: none; border-radius: 12px;
+      padding: 0.85rem 2.5rem; font-size: 1rem; font-weight: 800;
+      cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif;
+    }
+    .check-btn:hover { background: var(--blue3); transform: translateY(-1px); }
+    .skip-btn {
+      background: transparent; border: 1px solid rgba(56,189,248,0.15);
+      color: var(--muted); border-radius: 12px;
+      padding: 0.85rem 1.5rem; font-size: 0.9rem;
+      cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif;
+    }
+    .skip-btn:hover { color: var(--blue); border-color: rgba(56,189,248,0.3); }
+    .stop-btn {
+      background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2);
+      color: var(--red); border-radius: 12px;
+      padding: 0.85rem 1.5rem; font-size: 0.9rem;
+      cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif;
+    }
+    .stop-btn:hover { background: rgba(248,113,113,0.15); }
+
+    .hint-text { font-size: 0.72rem; color: #334155; margin-top: 0.8rem; }
+
+    /* ── Results screen ── */
+    .results-screen {
+      display: none; position: relative; z-index: 1;
+      min-height: calc(100vh - 65px);
+      flex-direction: column; align-items: center; justify-content: center;
+      padding: 3rem 2rem; text-align: center;
+    }
+    .results-screen.active { display: flex; }
+    .results-emoji { font-size: 4.5rem; margin-bottom: 1rem; }
+    .results-screen h2 { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.5rem; }
+    .results-screen p { color: var(--muted); margin-bottom: 2.5rem; line-height: 1.6; font-size: 0.95rem; max-width: 420px; }
+    .results-stats { display: flex; gap: 1rem; margin-bottom: 2.5rem; flex-wrap: wrap; justify-content: center; }
+    .r-card { background: var(--card); border: 1px solid rgba(56,189,248,0.1); border-radius: 16px; padding: 1.2rem 2rem; }
+    .r-num { font-size: 2.2rem; font-weight: 800; color: var(--blue); display: block; letter-spacing: -0.02em; }
+    .r-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .results-btns { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+    .btn-again { background: var(--blue); color: #080810; border: none; border-radius: 12px; padding: 0.9rem 2rem; font-size: 0.95rem; font-weight: 800; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; text-decoration: none; display: inline-block; }
+    .btn-again:hover { background: var(--blue3); transform: translateY(-1px); }
+    .btn-home { background: transparent; color: var(--muted); border: 1px solid rgba(56,189,248,0.15); border-radius: 12px; padding: 0.9rem 2rem; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; text-decoration: none; display: inline-block; }
+    .btn-home:hover { color: var(--blue); border-color: rgba(56,189,248,0.3); }
+
+    /* Missed chars */
+    .missed-box { background: rgba(248,113,113,0.05); border: 1px solid rgba(248,113,113,0.15); border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem; text-align: left; max-width: 480px; width: 100%; }
+    .missed-title { font-size: 0.78rem; font-weight: 700; color: var(--red); margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; }
+    .missed-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .missed-chip { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.2); border-radius: 10px; padding: 0.35rem 0.8rem; display: flex; gap: 0.5rem; align-items: center; }
+    .m-char { font-family: 'Noto Sans JP', sans-serif; color: var(--red); font-size: 1.1rem; }
+    .m-rom { color: var(--muted); font-size: 0.75rem; }
+
+    /* XP toast */
+    .xp-toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--card); border: 1px solid var(--blue); border-radius: 14px; padding: 0.9rem 1.5rem; color: var(--blue); font-weight: 800; font-size: 1rem; transform: translateY(80px); opacity: 0; transition: all 0.4s ease; z-index: 999; }
+    .xp-toast.show { transform: translateY(0); opacity: 1; }
+
+    /* Achievement toast */
+    .ach-toast { position: fixed; bottom: 2rem; left: 2rem; background: var(--card); border: 1px solid rgba(251,191,36,0.4); border-radius: 16px; padding: 1rem 1.5rem; display: flex; align-items: center; gap: 0.8rem; transform: translateY(80px); opacity: 0; transition: all 0.4s ease; z-index: 999; max-width: 280px; }
+    .ach-toast.show { transform: translateY(0); opacity: 1; }
+    .ach-icon { font-size: 1.8rem; }
+    .ach-info strong { display: block; font-size: 0.85rem; color: #fbbf24; }
+    .ach-info span { font-size: 0.72rem; color: var(--muted); }
+
+    /* Streak flash */
+    .streak-flash { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); background: rgba(251,191,36,0.15); border: 2px solid rgba(251,191,36,0.4); border-radius: 20px; padding: 1.5rem 3rem; font-size: 2rem; font-weight: 800; color: #fbbf24; z-index: 998; transition: all 0.3s; pointer-events: none; }
+    .streak-flash.show { transform: translate(-50%, -50%) scale(1); }
+
+    @media (max-width: 768px) {
+      .topbar { padding: 0.9rem 1.2rem; }
+      .char-big { font-size: 6.5rem; }
+      .study-card { padding: 2rem 1.5rem; }
+      .action-row { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+
+<nav class="topbar">
+  <a class="logo" href="{% url 'home' %}"><span class="ji">Ji</span>Kana</a>
+  <a href="{% url 'home' %}" class="back-btn">← Home</a>
+</nav>
+
+<!-- Setup screen -->
+<div class="setup-screen" id="setup-screen">
+  <h2>Practice <span>Mode</span> ⚡</h2>
+  <p>Characters appear randomly in an endless loop. Type the romaji and keep going as long as you want. You decide when to stop.</p>
+
+  <div class="script-options">
+    <div class="script-opt selected" data-script="hiragana" onclick="selectScript(this)">
+      <span class="opt-char">あ</span>
+      <div class="opt-label">Hiragana</div>
+      <div class="opt-count">46 chars</div>
+    </div>
+    <div class="script-opt" data-script="katakana" onclick="selectScript(this)">
+      <span class="opt-char">ア</span>
+      <div class="opt-label">Katakana</div>
+      <div class="opt-count">46 chars</div>
+    </div>
+    <div class="script-opt" data-script="kana" onclick="selectScript(this)">
+      <span class="opt-char">あア</span>
+      <div class="opt-label">Both</div>
+      <div class="opt-count">92 chars</div>
+    </div>
+  </div>
+
+  <button class="start-btn" onclick="startPractice()">⚡ Start Practice</button>
+</div>
+
+<!-- Practice screen -->
+<div class="practice-screen" id="practice-screen">
+  <div class="score-bar">
+    <div class="score-pill pill-c">✓ <span id="sc">0</span></div>
+    <div class="score-pill pill-w">✗ <span id="sw">0</span></div>
+    <div class="score-pill pill-x">⚡ <span id="sx">0</span> XP</div>
+    <div class="score-pill pill-streak">🔥 <span id="streak">0</span></div>
+  </div>
+
+  <div class="card-wrap">
+    <div class="study-card" id="study-card">
+      <div class="char-big" id="char-display">あ</div>
+      <div class="char-script" id="char-script">hiragana</div>
+
+      <div class="input-row">
+        <input type="text" class="rom-input" id="rom-input"
+               placeholder="type romaji..."
+               autocomplete="off" autocorrect="off"
+               autocapitalize="off" spellcheck="false"/>
+      </div>
+
+      <div class="feedback-text" id="feedback"></div>
+      <div class="answer-reveal" id="answer-reveal"></div>
+
+      <div class="action-row">
+        <button class="check-btn" id="check-btn" onclick="submitAnswer()">Check →</button>
+        <button class="skip-btn" onclick="skipChar()">Skip</button>
+        <button class="stop-btn" onclick="stopSession()">Stop session</button>
+      </div>
+      <div class="hint-text">Enter to check · Shift+Enter to skip</div>
+    </div>
+  </div>
+</div>
+
+<!-- Results screen -->
+<div class="results-screen" id="results-screen">
+  <div class="results-emoji" id="r-emoji">🎉</div>
+  <h2 id="r-title">Session complete!</h2>
+  <p id="r-msg"></p>
+  <div class="results-stats">
+    <div class="r-card"><span class="r-num" id="r-correct">0</span><div class="r-label">Correct</div></div>
+    <div class="r-card"><span class="r-num" id="r-wrong" style="color:#f87171">0</span><div class="r-label">Incorrect</div></div>
+    <div class="r-card"><span class="r-num" id="r-xp">0</span><div class="r-label">XP earned</div></div>
+  </div>
+  <div class="missed-box" id="missed-box" style="display:none;">
+    <div class="missed-title">Review these again</div>
+    <div class="missed-chips" id="missed-chips"></div>
+  </div>
+  <div class="results-btns">
+    <button class="btn-again" onclick="resetToSetup()">Practice again</button>
+    <a href="{% url 'home' %}" class="btn-home">Back to home</a>
+  </div>
+</div>
+
+<div class="xp-toast" id="xp-toast">⚡ +10 XP!</div>
+<div class="ach-toast" id="ach-toast">
+  <div class="ach-icon" id="ach-icon">🏆</div>
+  <div class="ach-info">
+    <strong id="ach-title">Achievement!</strong>
+    <span id="ach-desc"></span>
+  </div>
+</div>
+<div class="streak-flash" id="streak-flash">🔥 x5 Streak!</div>
+
+<script>
+const SCRIPTS = {
+  hiragana: {{ hiragana_json|safe }},
+  katakana: {{ katakana_json|safe }},
+  kana: {{ kana_json|safe }},
+};
+
+let currentScript = 'hiragana';
+let deck = [];
+let idx = 0;
+let correct = 0, wrong = 0;
+let currentStreak = 0;
+let results = [], missedChars = [];
+let answered = false;
+
+function selectScript(el) {
+  document.querySelectorAll('.script-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  currentScript = el.dataset.script;
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startPractice() {
+  deck = shuffle(SCRIPTS[currentScript]);
+  idx = 0; correct = 0; wrong = 0; currentStreak = 0;
+  results = []; missedChars = []; answered = false;
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('results-screen').classList.remove('active');
+  document.getElementById('practice-screen').classList.add('active');
+  showChar();
+  document.getElementById('rom-input').focus();
+}
+
+function showChar() {
+  if (idx >= deck.length) deck = shuffle(SCRIPTS[currentScript]); // loop forever
+  const c = deck[idx % deck.length];
+  document.getElementById('char-display').textContent = c.char;
+
+  let tag = currentScript;
+  if (currentScript === 'kana') {
+    const code = c.char.charCodeAt(0);
+    tag = (code >= 0x3040 && code <= 0x309F) ? 'hiragana' : 'katakana';
+  }
+  document.getElementById('char-script').textContent = tag;
+
+  const input = document.getElementById('rom-input');
+  input.value = ''; input.className = 'rom-input'; input.disabled = false; input.focus();
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback-text';
+  document.getElementById('answer-reveal').textContent = '';
+  document.getElementById('study-card').className = 'study-card';
+  document.getElementById('check-btn').textContent = 'Check →';
+  answered = false;
+  updateScores();
+}
+
+function submitAnswer() {
+  if (answered) { idx++; showChar(); return; }
+  const c = deck[idx % deck.length];
+  const input = document.getElementById('rom-input');
+  const val = input.value.trim().toLowerCase();
+  if (!val) return;
+
+  const isCorrect = val === c.rom.toLowerCase();
+  answered = true;
+  results.push({ char: c.char, rom: c.rom, correct: isCorrect });
+
+  if (isCorrect) {
+    correct++; currentStreak++;
+    input.className = 'rom-input correct';
+    document.getElementById('feedback').textContent = '✓ Correct!';
+    document.getElementById('feedback').className = 'feedback-text correct';
+    document.getElementById('study-card').className = 'study-card flash-correct';
+    showXPToast();
+    if (currentStreak > 0 && currentStreak % 5 === 0) showStreakFlash(currentStreak);
+  } else {
+    wrong++; currentStreak = 0;
+    input.className = 'rom-input wrong';
+    document.getElementById('feedback').textContent = '✗ Not quite';
+    document.getElementById('feedback').className = 'feedback-text wrong';
+    document.getElementById('answer-reveal').textContent = `Answer: ${c.rom}`;
+    document.getElementById('study-card').className = 'study-card flash-wrong';
+    missedChars.push(c);
+  }
+
+  input.disabled = true;
+  document.getElementById('check-btn').textContent = 'Next →';
+  updateScores();
+}
+
+function skipChar() {
+  if (!answered) {
+    const c = deck[idx % deck.length];
+    results.push({ char: c.char, rom: c.rom, correct: false });
+    wrong++; currentStreak = 0; missedChars.push(c);
+  }
+  idx++; showChar();
+}
+
+function stopSession() {
+  const total = correct + wrong;
+  if (total === 0) { resetToSetup(); return; }
+  showResults();
+}
+
+function showResults() {
+  document.getElementById('practice-screen').classList.remove('active');
+  document.getElementById('results-screen').classList.add('active');
+
+  const total = correct + wrong;
+  const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
+  document.getElementById('r-correct').textContent = correct;
+  document.getElementById('r-wrong').textContent = wrong;
+  document.getElementById('r-xp').textContent = correct * 10;
+
+  let emoji = '🎉', title = 'Session complete!', msg = '';
+  if (pct === 100 && total >= 5) { emoji = '🏆'; title = 'Perfect!'; msg = `Flawless session — ${total} characters, zero mistakes. Incredible!`; }
+  else if (pct >= 80) { msg = `Great work! ${pct}% accuracy over ${total} characters.`; }
+  else if (pct >= 50) { emoji = '💪'; msg = `${pct}% accuracy. You're improving — keep drilling!`; }
+  else { emoji = '📚'; title = 'Keep going!'; msg = `${pct}% correct. Review the missed characters and try again.`; }
+
+  document.getElementById('r-emoji').textContent = emoji;
+  document.getElementById('r-title').textContent = title;
+  document.getElementById('r-msg').textContent = msg;
+
+  const unique = [...new Map(missedChars.map(c => [c.char, c])).values()].slice(0, 12);
+  if (unique.length > 0) {
+    document.getElementById('missed-box').style.display = 'block';
+    document.getElementById('missed-chips').innerHTML = unique.map(c =>
+      `<div class="missed-chip"><span class="m-char">${c.char}</span><span class="m-rom">${c.rom}</span></div>`
+    ).join('');
+  }
+
+  fetch('/api/progress/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+    body: JSON.stringify({ script: currentScript, results, correct, incorrect: wrong, mode: 'normal' })
+  })
+  .then(r => r.json())
+  .then(data => { if (data.new_achievements?.length) showAchievements(data.new_achievements); })
+  .catch(console.error);
+}
+
+function resetToSetup() {
+  document.getElementById('results-screen').classList.remove('active');
+  document.getElementById('missed-box').style.display = 'none';
+  document.getElementById('missed-chips').innerHTML = '';
+  document.getElementById('setup-screen').style.display = 'flex';
+  document.getElementById('setup-screen').style.flexDirection = 'column';
+}
+
+function updateScores() {
+  document.getElementById('sc').textContent = correct;
+  document.getElementById('sw').textContent = wrong;
+  document.getElementById('sx').textContent = correct * 10;
+  document.getElementById('streak').textContent = currentStreak;
+}
+
+function showXPToast() {
+  const t = document.getElementById('xp-toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1200);
+}
+
+function showStreakFlash(n) {
+  const el = document.getElementById('streak-flash');
+  el.textContent = `🔥 ${n}x Streak!`;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 1500);
+}
+
+function showAchievements(list) {
+  let i = 0;
+  function next() {
+    if (i >= list.length) return;
+    const a = list[i++];
+    document.getElementById('ach-icon').textContent = a.icon;
+    document.getElementById('ach-title').textContent = a.title;
+    document.getElementById('ach-desc').textContent = a.desc;
+    const t = document.getElementById('ach-toast');
+    t.classList.add('show');
+    setTimeout(() => { t.classList.remove('show'); setTimeout(next, 400); }, 3000);
+  }
+  next();
+}
+
+function getCookie(name) {
+  let v = null;
+  document.cookie.split(';').forEach(c => {
+    c = c.trim();
+    if (c.startsWith(name + '=')) v = decodeURIComponent(c.slice(name.length + 1));
+  });
+  return v;
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitAnswer(); }
+  if (e.key === 'Enter' && e.shiftKey) { e.preventDefault(); skipChar(); }
+});
+
+// Canvas bg
+const canvas = document.getElementById('bg');
+const ctx = canvas.getContext('2d');
+const chars = ['あ','い','う','か','き','さ','な','は','ま','ア','イ','ウ','カ','キ','サ','ナ','ハ','マ'];
+let pts = [];
+function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+function init() { pts = Array.from({length: 25}, () => ({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, c: chars[Math.floor(Math.random()*chars.length)], s: Math.random()*14+8, sp: Math.random()*0.2+0.05, o: Math.random()*0.05+0.02, d: (Math.random()-0.5)*0.15 })); }
+function draw() { ctx.clearRect(0,0,canvas.width,canvas.height); pts.forEach(p => { ctx.font=`${p.s}px 'Noto Sans JP'`; ctx.fillStyle=`rgba(56,189,248,${p.o})`; ctx.fillText(p.c,p.x,p.y); p.y-=p.sp; p.x+=p.d; if(p.y<-40){p.y=canvas.height+40;p.x=Math.random()*canvas.width;p.c=chars[Math.floor(Math.random()*chars.length)];} if(p.x<-40)p.x=canvas.width+40; if(p.x>canvas.width+40)p.x=-40; }); requestAnimationFrame(draw); }
+window.addEventListener('resize', () => { resize(); init(); });
+resize(); init(); draw();
+</script>
+</body>
+</html>

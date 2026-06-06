@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>JiKana — Word Mode</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+JP:wght@300;400;700;900&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --black: #080810; --card: #111120;
+      --blue: #38bdf8; --blue3: #7dd3fc;
+      --blue-dim: rgba(56,189,248,0.10);
+      --text: #f0f4f8; --muted: #94a3b8;
+      --border: rgba(56,189,248,0.15);
+      --green: #34d399; --red: #f87171;
+    }
+    body { background: var(--black); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden; }
+    #bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+    .topbar { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 1rem 2.5rem; background: rgba(8,8,16,0.9); backdrop-filter: blur(24px); border-bottom: 1px solid rgba(56,189,248,0.08); }
+    .logo { font-size: 1.4rem; font-weight: 800; color: var(--text); text-decoration: none; letter-spacing: -0.02em; }
+    .logo .ji { color: var(--blue); }
+    .back-btn { color: var(--muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+    .back-btn:hover { color: var(--blue); }
+
+    /* ── Intro screen ── */
+    .intro-screen {
+      position: relative; z-index: 1;
+      min-height: calc(100vh - 65px);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 3rem 2rem; text-align: center;
+    }
+    .intro-icon { font-size: 4rem; margin-bottom: 1rem; font-family: 'Noto Sans JP', sans-serif; color: var(--blue); filter: drop-shadow(0 0 20px rgba(56,189,248,0.4)); }
+    .intro-screen h2 { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.5rem; }
+    .intro-screen h2 span { color: var(--blue); }
+    .intro-screen p { color: var(--muted); font-size: 0.95rem; margin-bottom: 1rem; line-height: 1.7; max-width: 460px; }
+    .intro-meta { display: flex; gap: 1rem; justify-content: center; margin-bottom: 3rem; flex-wrap: wrap; }
+    .intro-badge { background: var(--blue-dim); border: 1px solid var(--border); border-radius: 100px; padding: 0.3rem 0.9rem; font-size: 0.78rem; color: var(--blue3); }
+    .start-btn { background: var(--blue); color: #080810; border: none; border-radius: 14px; padding: 1rem 3rem; font-size: 1.05rem; font-weight: 800; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; box-shadow: 0 0 30px rgba(56,189,248,0.25); }
+    .start-btn:hover { background: var(--blue3); transform: translateY(-2px); box-shadow: 0 8px 40px rgba(56,189,248,0.4); }
+
+    /* ── Word screen ── */
+    .word-screen {
+      display: none; position: relative; z-index: 1;
+      min-height: calc(100vh - 65px);
+      flex-direction: column; align-items: center;
+      padding: 2.5rem 1.5rem;
+    }
+    .word-screen.active { display: flex; }
+
+    /* Progress bar */
+    .prog-wrap { width: 100%; max-width: 520px; margin-bottom: 2rem; }
+    .prog-meta { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--muted); margin-bottom: 0.5rem; }
+    .prog-meta span { color: var(--blue); font-weight: 600; }
+    .prog-bar { background: rgba(56,189,248,0.08); border-radius: 100px; height: 5px; overflow: hidden; }
+    .prog-fill { height: 100%; background: linear-gradient(90deg, var(--blue), var(--blue3)); border-radius: 100px; transition: width 0.4s ease; }
+
+    /* Score */
+    .score-bar { display: flex; gap: 1rem; margin-bottom: 2.5rem; flex-wrap: wrap; justify-content: center; }
+    .score-pill { border-radius: 100px; padding: 0.35rem 1rem; font-size: 0.82rem; font-weight: 700; }
+    .pill-c { background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.25); color: var(--green); }
+    .pill-w { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.25); color: var(--red); }
+    .pill-x { background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.2); color: var(--blue); }
+
+    /* Word card */
+    .word-card {
+      width: 100%; max-width: 520px;
+      background: var(--card);
+      border: 2px solid rgba(56,189,248,0.15);
+      border-radius: 28px;
+      padding: 3rem 2.5rem;
+      display: flex; flex-direction: column;
+      align-items: center; text-align: center;
+      transition: all 0.3s; margin-bottom: 2rem;
+      position: relative; overflow: hidden;
+    }
+    .word-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--blue), transparent); }
+    .word-card.flash-correct { border-color: var(--green); box-shadow: 0 0 40px rgba(52,211,153,0.15); }
+    .word-card.flash-wrong { border-color: var(--red); box-shadow: 0 0 40px rgba(248,113,113,0.15); }
+
+    .word-label { font-size: 0.7rem; color: #475569; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 1rem; }
+    .word-kana { font-size: 4.5rem; font-family: 'Noto Sans JP', sans-serif; color: var(--blue); line-height: 1; margin-bottom: 0.5rem; filter: drop-shadow(0 0 15px rgba(56,189,248,0.3)); }
+    .word-hint { font-size: 0.82rem; color: var(--muted); margin-bottom: 2rem; font-style: italic; }
+
+    .input-row { width: 100%; max-width: 320px; margin-bottom: 0.8rem; }
+    .word-input {
+      width: 100%; padding: 1rem 1.2rem; text-align: center;
+      background: rgba(8,8,16,0.8); border: 2px solid rgba(56,189,248,0.2);
+      border-radius: 14px; color: var(--text);
+      font-size: 1.3rem; font-weight: 700;
+      font-family: 'Inter', sans-serif; outline: none; transition: all 0.2s;
+      letter-spacing: 0.05em;
+    }
+    .word-input:focus { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(56,189,248,0.1); }
+    .word-input.correct { border-color: var(--green); background: rgba(52,211,153,0.06); color: var(--green); }
+    .word-input.wrong { border-color: var(--red); background: rgba(248,113,113,0.06); color: var(--red); }
+    .word-input::placeholder { color: #334155; font-weight: 400; font-size: 1rem; }
+
+    .feedback-text { font-size: 1rem; font-weight: 700; min-height: 1.5rem; }
+    .feedback-text.correct { color: var(--green); }
+    .feedback-text.wrong { color: var(--red); }
+    .answer-reveal { font-size: 0.85rem; color: var(--muted); min-height: 1.2rem; margin-top: 0.2rem; }
+    .meaning-reveal { font-size: 0.8rem; color: #475569; margin-top: 0.2rem; }
+
+    .action-row { display: flex; gap: 0.8rem; margin-top: 1.5rem; flex-wrap: wrap; justify-content: center; }
+    .check-btn { background: var(--blue); color: #080810; border: none; border-radius: 12px; padding: 0.85rem 2.5rem; font-size: 1rem; font-weight: 800; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+    .check-btn:hover { background: var(--blue3); transform: translateY(-1px); }
+    .skip-btn { background: transparent; border: 1px solid rgba(56,189,248,0.15); color: var(--muted); border-radius: 12px; padding: 0.85rem 1.5rem; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+    .skip-btn:hover { color: var(--blue); border-color: rgba(56,189,248,0.3); }
+    .hint-text { font-size: 0.72rem; color: #334155; margin-top: 0.8rem; }
+
+    /* ── Results ── */
+    .results-screen {
+      display: none; position: relative; z-index: 1;
+      min-height: calc(100vh - 65px);
+      flex-direction: column; align-items: center; justify-content: center;
+      padding: 3rem 2rem; text-align: center;
+    }
+    .results-screen.active { display: flex; }
+    .results-emoji { font-size: 4.5rem; margin-bottom: 1rem; }
+    .results-screen h2 { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.5rem; }
+    .results-screen p { color: var(--muted); margin-bottom: 2.5rem; line-height: 1.6; font-size: 0.95rem; max-width: 440px; }
+    .results-stats { display: flex; gap: 1rem; margin-bottom: 2.5rem; flex-wrap: wrap; justify-content: center; }
+    .r-card { background: var(--card); border: 1px solid rgba(56,189,248,0.1); border-radius: 16px; padding: 1.2rem 2rem; }
+    .r-num { font-size: 2.2rem; font-weight: 800; color: var(--blue); display: block; letter-spacing: -0.02em; }
+    .r-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* Missed words */
+    .missed-box { background: rgba(248,113,113,0.05); border: 1px solid rgba(248,113,113,0.15); border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem; text-align: left; max-width: 520px; width: 100%; }
+    .missed-title { font-size: 0.78rem; font-weight: 700; color: var(--red); margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; }
+    .missed-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .missed-word { background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.15); border-radius: 10px; padding: 0.5rem 1rem; display: flex; align-items: center; gap: 1rem; font-size: 0.85rem; }
+    .mw-kana { font-family: 'Noto Sans JP', sans-serif; color: var(--red); font-size: 1.2rem; min-width: 60px; }
+    .mw-rom { color: var(--blue3); font-weight: 600; }
+    .mw-meaning { color: var(--muted); font-size: 0.78rem; margin-left: auto; }
+
+    .results-btns { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+    .btn-again { background: var(--blue); color: #080810; border: none; border-radius: 12px; padding: 0.9rem 2rem; font-size: 0.95rem; font-weight: 800; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; text-decoration: none; display: inline-block; }
+    .btn-again:hover { background: var(--blue3); transform: translateY(-1px); }
+    .btn-home { background: transparent; color: var(--muted); border: 1px solid rgba(56,189,248,0.15); border-radius: 12px; padding: 0.9rem 2rem; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; text-decoration: none; display: inline-block; }
+    .btn-home:hover { color: var(--blue); border-color: rgba(56,189,248,0.3); }
+
+    .xp-toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--card); border: 1px solid var(--blue); border-radius: 14px; padding: 0.9rem 1.5rem; color: var(--blue); font-weight: 800; font-size: 1rem; transform: translateY(80px); opacity: 0; transition: all 0.4s ease; z-index: 999; }
+    .xp-toast.show { transform: translateY(0); opacity: 1; }
+
+    @media (max-width: 768px) {
+      .topbar { padding: 0.9rem 1.2rem; }
+      .word-kana { font-size: 3.2rem; }
+      .word-card { padding: 2rem 1.5rem; }
+      .action-row { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+
+<nav class="topbar">
+  <a class="logo" href="{% url 'home' %}"><span class="ji">Ji</span>Kana</a>
+  <a href="{% url 'home' %}" class="back-btn">← Home</a>
+</nav>
+
+<!-- Intro screen -->
+<div class="intro-screen" id="intro-screen">
+  <div class="intro-icon">🔤</div>
+  <h2>Word <span>Mode</span></h2>
+  <p>Real Japanese words written in kana will appear one at a time. Type the romaji reading to translate them.</p>
+  <div class="intro-meta">
+    <span class="intro-badge">{{ total }} words</span>
+    <span class="intro-badge">Hiragana + Katakana</span>
+    <span class="intro-badge">Random order</span>
+  </div>
+  <button class="start-btn" onclick="startWordMode()">🔤 Start Word Mode</button>
+</div>
+
+<!-- Word screen -->
+<div class="word-screen" id="word-screen">
+  <div class="prog-wrap">
+    <div class="prog-meta">
+      <span id="word-counter">1 of {{ total }}</span>
+      <span id="pct-label">0%</span>
+    </div>
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+
+  <div class="score-bar">
+    <div class="score-pill pill-c">✓ <span id="sc">0</span></div>
+    <div class="score-pill pill-w">✗ <span id="sw">0</span></div>
+    <div class="score-pill pill-x">⚡ <span id="sx">0</span> XP</div>
+  </div>
+
+  <div class="word-card" id="word-card">
+    <div class="word-label">translate this word</div>
+    <div class="word-kana" id="word-kana">あお</div>
+    <div class="word-hint" id="word-hint">what does this say in romaji?</div>
+
+    <div class="input-row">
+      <input type="text" class="word-input" id="word-input"
+             placeholder="type romaji..."
+             autocomplete="off" autocorrect="off"
+             autocapitalize="off" spellcheck="false"/>
+    </div>
+
+    <div class="feedback-text" id="feedback"></div>
+    <div class="answer-reveal" id="answer-reveal"></div>
+    <div class="meaning-reveal" id="meaning-reveal"></div>
+
+    <div class="action-row">
+      <button class="check-btn" id="check-btn" onclick="submitWord()">Check →</button>
+      <button class="skip-btn" onclick="skipWord()">Skip</button>
+    </div>
+    <div class="hint-text">Enter to check · Shift+Enter to skip</div>
+  </div>
+</div>
+
+<!-- Results screen -->
+<div class="results-screen" id="results-screen">
+  <div class="results-emoji" id="r-emoji">🎉</div>
+  <h2 id="r-title">Round complete!</h2>
+  <p id="r-msg"></p>
+  <div class="results-stats">
+    <div class="r-card"><span class="r-num" id="r-correct">0</span><div class="r-label">Correct</div></div>
+    <div class="r-card"><span class="r-num" id="r-wrong" style="color:#f87171">0</span><div class="r-label">Incorrect</div></div>
+    <div class="r-card"><span class="r-num" id="r-xp">0</span><div class="r-label">XP earned</div></div>
+  </div>
+  <div class="missed-box" id="missed-box" style="display:none;">
+    <div class="missed-title">Words to review</div>
+    <div class="missed-list" id="missed-list"></div>
+  </div>
+  <div class="results-btns">
+    <button class="btn-again" onclick="startWordMode()">Play again</button>
+    <a href="{% url 'home' %}" class="btn-home">Back to home</a>
+  </div>
+</div>
+
+<div class="xp-toast" id="xp-toast">⚡ +10 XP!</div>
+
+<script>
+const WORDS = {{ words_json|safe }};
+let deck = [], idx = 0, correct = 0, wrong = 0;
+let results = [], missedWords = [], answered = false;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startWordMode() {
+  deck = shuffle(WORDS);
+  idx = 0; correct = 0; wrong = 0;
+  results = []; missedWords = []; answered = false;
+  document.getElementById('intro-screen').style.display = 'none';
+  document.getElementById('results-screen').classList.remove('active');
+  document.getElementById('word-screen').classList.add('active');
+  showWord();
+  document.getElementById('word-input').focus();
+}
+
+function showWord() {
+  if (idx >= deck.length) { endSession(); return; }
+  const w = deck[idx];
+  document.getElementById('word-kana').textContent = w.kana;
+  document.getElementById('word-hint').textContent = `${w.kana.length} character${w.kana.length > 1 ? 's' : ''}`;
+
+  const input = document.getElementById('word-input');
+  input.value = ''; input.className = 'word-input'; input.disabled = false; input.focus();
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback-text';
+  document.getElementById('answer-reveal').textContent = '';
+  document.getElementById('meaning-reveal').textContent = '';
+  document.getElementById('word-card').className = 'word-card';
+  document.getElementById('check-btn').textContent = 'Check →';
+  answered = false;
+
+  const pct = Math.round((idx / deck.length) * 100);
+  document.getElementById('word-counter').textContent = `${idx + 1} of ${deck.length}`;
+  document.getElementById('pct-label').textContent = pct + '%';
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('sc').textContent = correct;
+  document.getElementById('sw').textContent = wrong;
+  document.getElementById('sx').textContent = correct * 10;
+}
+
+function submitWord() {
+  if (answered) { idx++; showWord(); return; }
+  const w = deck[idx];
+  const input = document.getElementById('word-input');
+  const val = input.value.trim().toLowerCase();
+  if (!val) return;
+
+  const isCorrect = val === w.rom.toLowerCase();
+  answered = true;
+  results.push({ char: w.kana, rom: w.rom, correct: isCorrect });
+
+  if (isCorrect) {
+    correct++;
+    input.className = 'word-input correct';
+    document.getElementById('feedback').textContent = '✓ Correct!';
+    document.getElementById('feedback').className = 'feedback-text correct';
+    document.getElementById('meaning-reveal').textContent = `"${w.meaning}"`;
+    document.getElementById('word-card').className = 'word-card flash-correct';
+    showXPToast();
+  } else {
+    wrong++;
+    input.className = 'word-input wrong';
+    document.getElementById('feedback').textContent = '✗ Not quite';
+    document.getElementById('feedback').className = 'feedback-text wrong';
+    document.getElementById('answer-reveal').textContent = `Answer: ${w.rom}`;
+    document.getElementById('meaning-reveal').textContent = `"${w.meaning}"`;
+    document.getElementById('word-card').className = 'word-card flash-wrong';
+    missedWords.push(w);
+  }
+
+  input.disabled = true;
+  document.getElementById('check-btn').textContent = 'Next →';
+  document.getElementById('sc').textContent = correct;
+  document.getElementById('sw').textContent = wrong;
+  document.getElementById('sx').textContent = correct * 10;
+}
+
+function skipWord() {
+  if (!answered) {
+    const w = deck[idx];
+    results.push({ char: w.kana, rom: w.rom, correct: false });
+    wrong++; missedWords.push(w);
+  }
+  idx++; showWord();
+}
+
+function endSession() {
+  document.getElementById('word-screen').classList.remove('active');
+  document.getElementById('results-screen').classList.add('active');
+
+  const total = deck.length;
+  const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
+  document.getElementById('r-correct').textContent = correct;
+  document.getElementById('r-wrong').textContent = wrong;
+  document.getElementById('r-xp').textContent = correct * 10;
+
+  let emoji = '🎉', title = 'Round complete!', msg = '';
+  if (pct === 100) { emoji = '🏆'; title = 'Perfect round!'; msg = `You translated all ${total} words correctly. Incredible vocabulary!`; }
+  else if (pct >= 80) { msg = `Excellent! ${pct}% accuracy — you really know your kana words.`; }
+  else if (pct >= 50) { emoji = '💪'; msg = `${pct}% correct. Review the ones you missed and try again!`; }
+  else { emoji = '📚'; title = 'Keep studying!'; msg = `${pct}% this round. Head back to the chart to review before trying again.`; }
+
+  document.getElementById('r-emoji').textContent = emoji;
+  document.getElementById('r-title').textContent = title;
+  document.getElementById('r-msg').textContent = msg;
+
+  if (missedWords.length > 0) {
+    document.getElementById('missed-box').style.display = 'block';
+    document.getElementById('missed-list').innerHTML = missedWords.slice(0, 8).map(w =>
+      `<div class="missed-word">
+        <span class="mw-kana">${w.kana}</span>
+        <span class="mw-rom">${w.rom}</span>
+        <span class="mw-meaning">${w.meaning}</span>
+      </div>`
+    ).join('');
+  }
+
+  fetch('/api/progress/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+    body: JSON.stringify({ script: 'kana', results, correct, incorrect: wrong, mode: 'word' })
+  }).catch(console.error);
+}
+
+function showXPToast() {
+  const t = document.getElementById('xp-toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1200);
+}
+
+function getCookie(name) {
+  let v = null;
+  document.cookie.split(';').forEach(c => {
+    c = c.trim();
+    if (c.startsWith(name + '=')) v = decodeURIComponent(c.slice(name.length + 1));
+  });
+  return v;
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitWord(); }
+  if (e.key === 'Enter' && e.shiftKey) { e.preventDefault(); skipWord(); }
+});
+
+// Canvas bg
+const canvas = document.getElementById('bg');
+const ctx = canvas.getContext('2d');
+const chars = ['あお','いぬ','うみ','えき','かわ','さかな','にほん','ねこ','はな','ほし','アイス','カメラ','コーヒー','テレビ','バス'];
+let pts = [];
+function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+function init() { pts = Array.from({length: 20}, () => ({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, c: chars[Math.floor(Math.random()*chars.length)], s: Math.random()*14+8, sp: Math.random()*0.18+0.04, o: Math.random()*0.04+0.015, d: (Math.random()-0.5)*0.12 })); }
+function draw() { ctx.clearRect(0,0,canvas.width,canvas.height); pts.forEach(p => { ctx.font=`${p.s}px 'Noto Sans JP'`; ctx.fillStyle=`rgba(56,189,248,${p.o})`; ctx.fillText(p.c,p.x,p.y); p.y-=p.sp; p.x+=p.d; if(p.y<-40){p.y=canvas.height+40;p.x=Math.random()*canvas.width;p.c=chars[Math.floor(Math.random()*chars.length)];} if(p.x<-40)p.x=canvas.width+40; if(p.x>canvas.width+40)p.x=-40; }); requestAnimationFrame(draw); }
+window.addEventListener('resize', () => { resize(); init(); });
+resize(); init(); draw();
+</script>
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>JiKana — Learn Chart</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+JP:wght@300;400;700;900&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --black: #080810; --card: #111120; --card2: #16162a;
+      --blue: #38bdf8; --blue3: #7dd3fc;
+      --blue-dim: rgba(56,189,248,0.10);
+      --text: #f0f4f8; --muted: #94a3b8;
+      --border: rgba(56,189,248,0.15);
+    }
+    body { background: var(--black); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
+
+    .topbar { display: flex; align-items: center; justify-content: space-between; padding: 1rem 2.5rem; background: rgba(8,8,16,0.9); backdrop-filter: blur(24px); border-bottom: 1px solid rgba(56,189,248,0.08); position: sticky; top: 0; z-index: 50; }
+    .logo { font-size: 1.4rem; font-weight: 800; color: var(--text); text-decoration: none; letter-spacing: -0.02em; }
+    .logo .ji { color: var(--blue); }
+    .back-btn { display: flex; align-items: center; gap: 0.4rem; color: var(--muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+    .back-btn:hover { color: var(--blue); }
+
+    .main { max-width: 1100px; margin: 0 auto; padding: 3rem 2rem; }
+
+    .page-header { text-align: center; margin-bottom: 3rem; }
+    .page-header h1 { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.5rem; }
+    .page-header h1 span { color: var(--blue); }
+    .page-header p { color: var(--muted); font-size: 0.95rem; line-height: 1.6; }
+
+    /* ── Tabs ── */
+    .tabs { display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 3rem; background: var(--card); border: 1px solid rgba(56,189,248,0.1); border-radius: 14px; padding: 0.4rem; width: fit-content; margin-left: auto; margin-right: auto; }
+    .tab { padding: 0.6rem 1.8rem; border-radius: 10px; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.2s; color: var(--muted); border: none; background: none; font-family: 'Inter', sans-serif; }
+    .tab.active { background: var(--blue); color: #080810; }
+    .tab:hover:not(.active) { color: var(--blue); }
+
+    /* ── Chart grid ── */
+    .chart-section { display: none; }
+    .chart-section.active { display: block; }
+
+    .group-block { margin-bottom: 2.5rem; }
+    .group-title { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.8rem; }
+    .group-title::after { content: ''; flex: 1; height: 1px; background: rgba(56,189,248,0.08); }
+
+    .char-grid { display: flex; flex-wrap: wrap; gap: 0.8rem; }
+
+    .char-tile {
+      width: 88px; height: 100px;
+      background: var(--card);
+      border: 1px solid rgba(56,189,248,0.1);
+      border-radius: 16px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.25s;
+      position: relative; overflow: hidden;
+    }
+    .char-tile::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(56,189,248,0.08), transparent 70%);
+      opacity: 0; transition: opacity 0.25s;
+    }
+    .char-tile:hover::before { opacity: 1; }
+    .char-tile:hover {
+      border-color: var(--blue);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(56,189,248,0.15);
+    }
+    .char-tile.flipped { background: rgba(56,189,248,0.08); border-color: var(--blue); }
+    .tile-char { font-size: 2.2rem; font-family: 'Noto Sans JP', sans-serif; color: var(--blue); line-height: 1; transition: all 0.2s; }
+    .tile-rom { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; transition: all 0.2s; }
+    .tile-meaning { font-size: 0.55rem; color: #475569; margin-top: 0.15rem; text-align: center; padding: 0 4px; }
+
+    /* Flipped state shows big romaji */
+    .char-tile.flipped .tile-char { font-size: 1.1rem; color: var(--blue3); font-family: 'Inter', sans-serif; font-weight: 700; }
+    .char-tile.flipped .tile-rom { font-size: 1.6rem; font-family: 'Noto Sans JP', sans-serif; color: var(--blue); font-weight: 700; margin-top: 0; }
+
+    /* ── Tip box ── */
+    .tip-box { background: rgba(56,189,248,0.05); border: 1px solid rgba(56,189,248,0.15); border-radius: 14px; padding: 1rem 1.5rem; margin-bottom: 2rem; display: flex; align-items: center; gap: 0.8rem; font-size: 0.85rem; color: var(--muted); }
+    .tip-box strong { color: var(--blue3); }
+
+    /* ── Practice CTA ── */
+    .practice-cta { background: linear-gradient(135deg, rgba(56,189,248,0.08), rgba(56,189,248,0.03)); border: 1px solid rgba(56,189,248,0.2); border-radius: 20px; padding: 2.5rem; text-align: center; margin-top: 3rem; }
+    .practice-cta h3 { font-size: 1.4rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .practice-cta p { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
+    .practice-btn { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--blue); color: #080810; font-weight: 800; font-size: 0.95rem; padding: 0.85rem 2rem; border-radius: 12px; text-decoration: none; transition: all 0.2s; }
+    .practice-btn:hover { background: var(--blue3); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(56,189,248,0.3); }
+
+    @media (max-width: 768px) {
+      .topbar { padding: 0.9rem 1.2rem; }
+      .main { padding: 2rem 1rem; }
+      .char-tile { width: 72px; height: 84px; }
+      .tile-char { font-size: 1.8rem; }
+      .char-tile.flipped .tile-rom { font-size: 1.3rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="topbar">
+  <a class="logo" href="{% url 'home' %}"><span class="ji">Ji</span>Kana</a>
+  <a href="{% url 'home' %}" class="back-btn">← Back to home</a>
+</nav>
+
+<main class="main">
+
+  <div class="page-header">
+    <h1>Kana <span>Reference Chart</span></h1>
+    <p>Tap any character to flip it and see its romaji reading. Study the full chart before you start drilling.</p>
+  </div>
+
+  <div class="tip-box">
+    💡 <span><strong>How to use:</strong> Read through the chart first. Tap each character to reveal its reading. Once you know a few, head to Practice to drill them.</span>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('hiragana', this)">Hiragana あ</button>
+    <button class="tab" onclick="showTab('katakana', this)">Katakana ア</button>
+  </div>
+
+  <!-- Hiragana Chart -->
+  <div class="chart-section active" id="chart-hiragana">
+    {% regroup hiragana by group as hiragana_groups %}
+    {% for group in hiragana_groups %}
+    <div class="group-block">
+      <div class="group-title">{{ group.grouper }} — row</div>
+      <div class="char-grid">
+        {% for c in group.list %}
+        <div class="char-tile" onclick="flipTile(this)">
+          <span class="tile-char">{{ c.char }}</span>
+          <span class="tile-rom" data-rom="{{ c.rom }}">{{ c.rom }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Katakana Chart -->
+  <div class="chart-section" id="chart-katakana">
+    {% regroup katakana by group as katakana_groups %}
+    {% for group in katakana_groups %}
+    <div class="group-block">
+      <div class="group-title">{{ group.grouper }} — row</div>
+      <div class="char-grid">
+        {% for c in group.list %}
+        <div class="char-tile" onclick="flipTile(this)">
+          <span class="tile-char">{{ c.char }}</span>
+          <span class="tile-rom" data-rom="{{ c.rom }}">{{ c.rom }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- CTA -->
+  <div class="practice-cta">
+    <h3>Ready to drill? ⚡</h3>
+    <p>Now that you've studied the chart, put your memory to the test in Practice mode.</p>
+    <a href="{% url 'practice' %}" class="practice-btn">Start Practice →</a>
+  </div>
+
+</main>
+
+<script>
+function showTab(name, btn) {
+  document.querySelectorAll('.chart-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('chart-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+function flipTile(tile) {
+  tile.classList.toggle('flipped');
+  const charEl = tile.querySelector('.tile-char');
+  const romEl = tile.querySelector('.tile-rom');
+  if (tile.classList.contains('flipped')) {
+    const rom = romEl.dataset.rom;
+    const origChar = charEl.textContent;
+    tile.dataset.origChar = origChar;
+    charEl.textContent = rom;
+    romEl.textContent = origChar;
+  } else {
+    charEl.textContent = tile.dataset.origChar;
+    romEl.textContent = romEl.dataset.rom;
+  }
+}
+</script>
+</body>
+</html>

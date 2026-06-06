@@ -1,37 +1,15 @@
 {% extends "base.html" %}
-{% block title %}Sign In — KanaFlow{% endblock %}
+{% block title %}Sign In — JiKana{% endblock %}
 
 {% block extra_style %}
-.auth-wrap {
-  position: relative; z-index: 1;
-  min-height: 100vh;
-  display: flex; align-items: center; justify-content: center;
-  padding: 2rem;
-}
-.auth-card {
-  background: rgba(19,19,31,0.92);
-  border: 1px solid rgba(56,189,248,0.18);
-  border-radius: 24px;
-  padding: 2.8rem 2.5rem;
-  width: 100%; max-width: 440px;
-  backdrop-filter: blur(20px);
-  animation: slideUp 0.5s ease both;
-}
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.auth-logo { text-align: center; margin-bottom: 0.5rem; font-size: 2.2rem; font-family: 'Noto Sans JP', sans-serif; color: #38bdf8; }
+.auth-wrap { position: relative; z-index: 1; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+.auth-card { background: rgba(17,17,32,0.92); border: 1px solid rgba(56,189,248,0.18); border-radius: 24px; padding: 2.8rem 2.5rem; width: 100%; max-width: 440px; backdrop-filter: blur(20px); animation: slideUp 0.5s ease both; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+.auth-logo { text-align: center; font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+.auth-logo .ji { color: #38bdf8; }
 .auth-title { text-align: center; font-size: 1.5rem; font-weight: 700; margin-bottom: 0.4rem; }
 .auth-sub { text-align: center; color: #94a3b8; font-size: 0.88rem; margin-bottom: 2rem; line-height: 1.6; }
-.google-btn {
-  display: flex; align-items: center; justify-content: center; gap: 0.7rem;
-  width: 100%; padding: 0.85rem;
-  background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2);
-  border-radius: 12px; color: #f0f4f8; font-size: 0.95rem; font-weight: 500;
-  text-decoration: none; transition: all 0.2s; margin-bottom: 1.5rem;
-  cursor: pointer; font-family: 'Inter', sans-serif;
-}
+.google-btn { display: flex; align-items: center; justify-content: center; gap: 0.7rem; width: 100%; padding: 0.85rem; background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); border-radius: 12px; color: #f0f4f8; font-size: 0.95rem; font-weight: 500; text-decoration: none; transition: all 0.2s; margin-bottom: 1.5rem; cursor: pointer; font-family: 'Inter', sans-serif; }
 .google-btn:hover { background: rgba(56,189,248,0.15); border-color: #38bdf8; color: #38bdf8; transform: translateY(-1px); }
 .google-icon { width: 20px; height: 20px; }
 .divider { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
@@ -39,44 +17,32 @@
 .divider-text { color: #94a3b8; font-size: 0.8rem; }
 .form-group { margin-bottom: 1.1rem; }
 .form-label { display: block; font-size: 0.82rem; font-weight: 500; color: #94a3b8; margin-bottom: 0.4rem; }
-.form-input {
-  width: 100%; padding: 0.8rem 1rem;
-  background: rgba(10,10,15,0.8); border: 1px solid rgba(56,189,248,0.15);
-  border-radius: 10px; color: #f0f4f8; font-size: 0.95rem;
-  font-family: 'Inter', sans-serif; transition: all 0.2s; outline: none;
-}
+.form-input { width: 100%; padding: 0.8rem 1rem; background: rgba(8,8,16,0.8); border: 1px solid rgba(56,189,248,0.15); border-radius: 10px; color: #f0f4f8; font-size: 0.95rem; font-family: 'Inter', sans-serif; transition: all 0.2s; outline: none; }
 .form-input:focus { border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56,189,248,0.12); }
 .form-input::placeholder { color: #475569; }
 .form-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; }
 .forgot-link { font-size: 0.8rem; color: #38bdf8; text-decoration: none; }
 .forgot-link:hover { color: #7dd3fc; }
-.submit-btn {
-  width: 100%; padding: 0.9rem;
-  background: #38bdf8; color: #0a0a0f;
-  border: none; border-radius: 12px;
-  font-size: 1rem; font-weight: 700;
-  cursor: pointer; transition: all 0.2s;
-  margin-top: 0.5rem; font-family: 'Inter', sans-serif;
-}
+.submit-btn { width: 100%; padding: 0.9rem; background: #38bdf8; color: #080810; border: none; border-radius: 12px; font-size: 1rem; font-weight: 800; cursor: pointer; transition: all 0.2s; margin-top: 0.5rem; font-family: 'Inter', sans-serif; }
 .submit-btn:hover { background: #7dd3fc; transform: translateY(-1px); box-shadow: 0 6px 25px rgba(56,189,248,0.3); }
 .auth-footer { text-align: center; margin-top: 1.5rem; font-size: 0.88rem; color: #94a3b8; }
 .auth-footer a { color: #38bdf8; text-decoration: none; font-weight: 500; }
 .error-list { margin-bottom: 1rem; }
 .error-item { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.25); border-radius: 8px; padding: 0.6rem 0.9rem; color: #f87171; font-size: 0.85rem; margin-bottom: 0.4rem; }
-.back-home { position: fixed; top: 1.5rem; left: 1.5rem; z-index: 10; display: flex; align-items: center; gap: 0.4rem; color: #94a3b8; text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
-.back-home:hover { color: #38bdf8; }
 .remember-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
 .remember-row input { accent-color: #38bdf8; width: 15px; height: 15px; cursor: pointer; }
 .remember-row label { font-size: 0.85rem; color: #94a3b8; cursor: pointer; }
+.back-home { position: fixed; top: 1.5rem; left: 1.5rem; z-index: 10; color: #94a3b8; text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+.back-home:hover { color: #38bdf8; }
 {% endblock %}
 
 {% block content %}
-<a href="{% url 'landing' %}" class="back-home">← KanaFlow</a>
+<a href="{% url 'landing' %}" class="back-home">← JiKana</a>
 <div class="auth-wrap">
   <div class="auth-card">
-    <div class="auth-logo">漢</div>
+    <div class="auth-logo"><span class="ji">Ji</span>Kana</div>
     <h1 class="auth-title">Welcome back</h1>
-    <p class="auth-sub">Continue your Japanese learning streak today.</p>
+    <p class="auth-sub">Continue your Japanese learning journey.</p>
 
     {% if form.errors %}
     <div class="error-list">
@@ -104,29 +70,21 @@
 
     <form method="POST" action="{% url 'account_login' %}">
       {% csrf_token %}
-
       <div class="form-group">
         <label class="form-label">Username or email</label>
-        <input type="text" name="login" class="form-input"
-               placeholder="your_username or you@example.com"
-               value="{{ form.login.value|default:'' }}" autocomplete="username"/>
+        <input type="text" name="login" class="form-input" placeholder="your_username or you@example.com" value="{{ form.login.value|default:'' }}" autocomplete="username"/>
       </div>
-
       <div class="form-group">
         <div class="form-row">
           <label class="form-label" style="margin:0;">Password</label>
           <a href="{% url 'account_reset_password' %}" class="forgot-link">Forgot password?</a>
         </div>
-        <input type="password" name="password" class="form-input"
-               placeholder="Your password" autocomplete="current-password"
-               style="margin-top: 0.4rem;"/>
+        <input type="password" name="password" class="form-input" placeholder="Your password" autocomplete="current-password" style="margin-top:0.4rem;"/>
       </div>
-
       <div class="remember-row">
         <input type="checkbox" name="remember" id="remember"/>
         <label for="remember">Keep me signed in</label>
       </div>
-
       <button type="submit" class="submit-btn">✦ Sign In</button>
     </form>
 

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>JiKana — Home</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+JP:wght@300;400;700;900&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --black: #080810;
+      --card: #111120;
+      --card2: #16162a;
+      --blue: #38bdf8;
+      --blue3: #7dd3fc;
+      --blue-dim: rgba(56,189,248,0.10);
+      --blue-glow: rgba(56,189,248,0.25);
+      --text: #f0f4f8;
+      --muted: #94a3b8;
+      --border: rgba(56,189,248,0.15);
+    }
+    body { background: var(--black); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden; }
+    #bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+    /* ── Topbar ── */
+    .topbar {
+      position: sticky; top: 0; z-index: 50;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2.5rem;
+      background: rgba(8,8,16,0.85); backdrop-filter: blur(24px);
+      border-bottom: 1px solid rgba(56,189,248,0.08);
+    }
+    .logo { font-size: 1.4rem; font-weight: 800; color: var(--text); text-decoration: none; letter-spacing: -0.02em; }
+    .logo .ji { color: var(--blue); }
+    .topbar-right { display: flex; align-items: center; gap: 1rem; }
+    .xp-pill { display: flex; align-items: center; gap: 0.4rem; background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); border-radius: 100px; padding: 0.3rem 0.9rem; font-size: 0.78rem; font-weight: 700; color: var(--blue); }
+    .streak-pill { display: flex; align-items: center; gap: 0.4rem; background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.2); border-radius: 100px; padding: 0.3rem 0.9rem; font-size: 0.78rem; font-weight: 700; color: #fbbf24; }
+    .avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--blue-dim); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.82rem; font-weight: 800; color: var(--blue); text-decoration: none; }
+    .sign-out { color: var(--muted); font-size: 0.78rem; text-decoration: none; transition: color 0.2s; }
+    .sign-out:hover { color: #f87171; }
+
+    /* ── Main ── */
+    .main { position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; padding: 3rem 2rem; }
+
+    /* ── Greeting ── */
+    .greeting { margin-bottom: 3rem; }
+    .greeting-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.4rem; }
+    .greeting h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; }
+    .greeting h1 span { color: var(--blue); }
+    .greeting p { color: var(--muted); font-size: 0.9rem; }
+
+    /* ── Stats ── */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 3rem; }
+    .stat-card { background: var(--card); border: 1px solid rgba(56,189,248,0.08); border-radius: 16px; padding: 1.2rem 1.4rem; transition: all 0.3s; }
+    .stat-card:hover { border-color: rgba(56,189,248,0.25); transform: translateY(-2px); }
+    .stat-num { font-size: 1.8rem; font-weight: 800; color: var(--blue); display: block; letter-spacing: -0.02em; }
+    .stat-label { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* ── 3 Mode Cards ── */
+    .modes-title { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 1.2rem; }
+    .modes-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; margin-bottom: 3rem; }
+
+    .mode-card {
+      background: var(--card);
+      border: 1px solid rgba(56,189,248,0.1);
+      border-radius: 24px;
+      padding: 2rem 1.8rem;
+      text-decoration: none; color: var(--text);
+      transition: all 0.3s;
+      display: flex; flex-direction: column;
+      position: relative; overflow: hidden;
+    }
+    .mode-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, transparent, var(--blue), transparent);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .mode-card:hover::before { opacity: 1; }
+    .mode-card:hover {
+      border-color: rgba(56,189,248,0.3);
+      transform: translateY(-6px);
+      box-shadow: 0 20px 60px rgba(56,189,248,0.12);
+    }
+    .mode-icon { font-size: 2.8rem; font-family: 'Noto Sans JP', sans-serif; color: var(--blue); margin-bottom: 1.2rem; line-height: 1; display: block; }
+    .mode-card h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .mode-card p { font-size: 0.82rem; color: var(--muted); line-height: 1.6; flex: 1; }
+    .mode-btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      margin-top: 1.5rem;
+      background: var(--blue-dim); border: 1px solid var(--border);
+      border-radius: 10px; padding: 0.55rem 1.1rem;
+      font-size: 0.82rem; font-weight: 600; color: var(--blue);
+      transition: all 0.2s; width: fit-content;
+    }
+    .mode-card:hover .mode-btn { background: var(--blue); color: #080810; border-color: var(--blue); }
+
+    /* Highlight middle card */
+    .mode-card.featured {
+      background: linear-gradient(135deg, rgba(56,189,248,0.08), rgba(56,189,248,0.03));
+      border-color: rgba(56,189,248,0.25);
+    }
+    .mode-card.featured::before { opacity: 1; }
+
+    /* ── Progress ── */
+    .progress-section { background: var(--card); border: 1px solid rgba(56,189,248,0.08); border-radius: 20px; padding: 2rem; margin-bottom: 2rem; }
+    .progress-title { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 1.5rem; }
+    .prog-item { margin-bottom: 1.2rem; }
+    .prog-item:last-child { margin-bottom: 0; }
+    .prog-header { display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.82rem; }
+    .prog-header span:first-child { font-weight: 600; }
+    .prog-header span:last-child { color: var(--muted); }
+    .prog-bar { background: rgba(56,189,248,0.08); border-radius: 100px; height: 6px; overflow: hidden; }
+    .prog-fill { height: 100%; border-radius: 100px; background: linear-gradient(90deg, var(--blue), var(--blue3)); transition: width 1s ease; }
+    .prog-fill-purple { background: linear-gradient(90deg, #a78bfa, #c4b5fd); }
+    .prog-fill-green { background: linear-gradient(90deg, #34d399, #6ee7b7); }
+
+    /* ── Recent sessions ── */
+    .sessions-box { background: var(--card); border: 1px solid rgba(56,189,248,0.08); border-radius: 20px; overflow: hidden; }
+    .sessions-head { padding: 1.5rem 2rem; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid rgba(56,189,248,0.06); }
+    .session-row { display: flex; align-items: center; gap: 1rem; padding: 1rem 2rem; border-bottom: 1px solid rgba(56,189,248,0.04); transition: background 0.2s; }
+    .session-row:last-child { border-bottom: none; }
+    .session-row:hover { background: rgba(56,189,248,0.03); }
+    .s-tag { border-radius: 8px; padding: 0.2rem 0.6rem; font-size: 0.7rem; font-weight: 700; }
+    .s-h { background: rgba(56,189,248,0.12); color: var(--blue); }
+    .s-k { background: rgba(167,139,250,0.12); color: #a78bfa; }
+    .s-j { background: rgba(52,211,153,0.12); color: #34d399; }
+    .s-w { background: rgba(251,191,36,0.12); color: #fbbf24; }
+    .s-info { flex: 1; display: flex; align-items: center; gap: 2rem; font-size: 0.82rem; }
+    .s-correct { color: #34d399; }
+    .s-wrong { color: #f87171; }
+    .s-xp { color: var(--blue); font-weight: 600; }
+    .s-date { color: var(--muted); margin-left: auto; font-size: 0.75rem; }
+    .empty-msg { text-align: center; padding: 3rem; color: #334155; font-size: 0.88rem; }
+
+    /* ── Mobile ── */
+    @media (max-width: 768px) {
+      .topbar { padding: 0.9rem 1.2rem; }
+      .main { padding: 2rem 1rem; }
+      .greeting h1 { font-size: 1.5rem; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .modes-grid { grid-template-columns: 1fr; }
+      .s-info { gap: 1rem; flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+
+<nav class="topbar">
+  <a class="logo" href="{% url 'home' %}"><span class="ji">Ji</span>Kana</a>
+  <div class="topbar-right">
+    <div class="xp-pill">⚡ {{ profile.total_xp }} XP</div>
+    <div class="streak-pill">🔥 {{ profile.streak_days }}</div>
+    <a href="{% url 'profile' %}" class="avatar">{{ request.user.username|first|upper }}</a>
+    <a href="{% url 'logout' %}" class="sign-out">Sign out</a>
+  </div>
+</nav>
+
+<main class="main">
+
+  <!-- Greeting -->
+  <div class="greeting">
+    <h1>こんにちは, <span>{{ request.user.username }}</span> 👋</h1>
+    <p>Pick a mode and start learning. Every session makes you better.</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <span class="stat-num">{{ profile.total_xp }}</span>
+      <div class="stat-label">Total XP</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num">{{ profile.streak_days }}</span>
+      <div class="stat-label">Day streak</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num">{{ total_mastered }}</span>
+      <div class="stat-label">Mastered</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num">{{ total_chars }}</span>
+      <div class="stat-label">Total chars</div>
+    </div>
+  </div>
+
+  <!-- 3 Mode Cards -->
+  <div class="modes-title">Choose your mode</div>
+  <div class="modes-grid">
+
+    <a href="{% url 'chart' %}" class="mode-card">
+      <span class="mode-icon">📖</span>
+      <h3>Learn</h3>
+      <p>Study all kana characters laid out in a clear visual chart. Perfect for beginners starting from zero.</p>
+      <div class="mode-btn">Open chart →</div>
+    </a>
+
+    <a href="{% url 'practice' %}" class="mode-card featured">
+      <span class="mode-icon">⚡</span>
+      <h3>Practice</h3>
+      <p>Characters appear randomly in an endless loop. Type the romaji and keep going until you feel confident.</p>
+      <div class="mode-btn">Start drilling →</div>
+    </a>
+
+    <a href="{% url 'word_mode' %}" class="mode-card">
+      <span class="mode-icon">🔤</span>
+      <h3>Word Mode</h3>
+      <p>Translate real Japanese words from kana to romaji. Test your reading ability with actual vocabulary.</p>
+      <div class="mode-btn">Translate words →</div>
+    </a>
+
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-section">
+    <div class="progress-title">Your progress</div>
+    <div class="prog-item">
+      <div class="prog-header">
+        <span>Hiragana</span>
+        <span>{{ hiragana_mastered }} / {{ hiragana_total }} mastered</span>
+      </div>
+      <div class="prog-bar">
+        <div class="prog-fill" style="width: {% widthratio hiragana_mastered hiragana_total 100 %}%"></div>
+      </div>
+    </div>
+    <div class="prog-item">
+      <div class="prog-header">
+        <span>Katakana</span>
+        <span>{{ katakana_mastered }} / {{ katakana_total }} mastered</span>
+      </div>
+      <div class="prog-bar">
+        <div class="prog-fill prog-fill-purple" style="width: {% widthratio katakana_mastered katakana_total 100 %}%"></div>
+      </div>
+    </div>
+    <div class="prog-item">
+      <div class="prog-header">
+        <span>Kanji</span>
+        <span>{{ kanji_mastered }} / {{ kanji_total }} mastered</span>
+      </div>
+      <div class="prog-bar">
+        <div class="prog-fill prog-fill-green" style="width: {% widthratio kanji_mastered kanji_total 100 %}%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent sessions -->
+  <div class="sessions-box">
+    <div class="sessions-head">Recent sessions</div>
+    {% if recent_sessions %}
+      {% for s in recent_sessions %}
+      <div class="session-row">
+        <span class="s-tag {% if s.script == 'hiragana' %}s-h{% elif s.script == 'katakana' %}s-k{% elif s.script == 'word' %}s-w{% else %}s-j{% endif %}">
+          {{ s.script|capfirst }}
+        </span>
+        <div class="s-info">
+          <span class="s-correct">✓ {{ s.correct }}</span>
+          <span class="s-wrong">✗ {{ s.incorrect }}</span>
+          <span class="s-xp">⚡ {{ s.xp_earned }} XP</span>
+          <span class="s-date">{{ s.created_at|date:"M d, Y" }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-msg">No sessions yet — pick a mode above and start! 🎌</div>
+    {% endif %}
+  </div>
+
+</main>
+
+<script>
+const canvas = document.getElementById('bg');
+const ctx = canvas.getContext('2d');
+const chars = ['あ','い','う','か','き','さ','し','な','は','ま','や','ら','わ','ん','ア','イ','ウ','カ','キ','サ','シ','ナ','ハ','マ','ヤ','ラ','ワ','ン','字','日','月'];
+let pts = [];
+function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+function init() {
+  pts = Array.from({length: 35}, () => ({
+    x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+    c: chars[Math.floor(Math.random() * chars.length)],
+    s: Math.random() * 16 + 8, sp: Math.random() * 0.25 + 0.05,
+    o: Math.random() * 0.06 + 0.02, d: (Math.random() - 0.5) * 0.18,
+  }));
+}
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  pts.forEach(p => {
+    ctx.font = `${p.s}px 'Noto Sans JP'`;
+    ctx.fillStyle = `rgba(56,189,248,${p.o})`;
+    ctx.fillText(p.c, p.x, p.y);
+    p.y -= p.sp; p.x += p.d;
+    if (p.y < -40) { p.y = canvas.height + 40; p.x = Math.random() * canvas.width; p.c = chars[Math.floor(Math.random() * chars.length)]; }
+    if (p.x < -40) p.x = canvas.width + 40;
+    if (p.x > canvas.width + 40) p.x = -40;
+  });
+  requestAnimationFrame(draw);
+}
+window.addEventListener('resize', () => { resize(); init(); });
+resize(); init(); draw();
+</script>
+</body>
+</html>
